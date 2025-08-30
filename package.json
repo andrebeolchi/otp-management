@@ -1,0 +1,37 @@
+{
+  "name": "otp-management",
+  "version": "1.0.0",
+  "description": "api rest for otp tokens",
+  "main": "index.js",
+  "author": "Andre Beolchi <andregarbini2001@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "prepare": "husky",
+    "commitlint:edit": "commitlint --edit",
+    "lint": "eslint src/** --no-error-on-unmatched-pattern",
+    "lint:fix": "eslint --fix src/** --no-error-on-unmatched-pattern",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "@eslint/js": "^9.34.0",
+    "@types/node": "^24.3.0",
+    "eslint": "^9.34.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-prettier": "^5.5.4",
+    "globals": "^16.3.0",
+    "husky": "^9.1.7",
+    "jiti": "^2.5.1",
+    "lint-staged": "^16.1.5",
+    "prettier": "^3.6.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.41.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": "eslint --fix"
+  }
+}
