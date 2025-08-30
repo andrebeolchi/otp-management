@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker'
 
+import { HashProvider } from '~/application/repositories/hash-provider'
 import { OTPProvider } from '~/application/repositories/otp-provider'
 import { OTPRepository } from '~/application/repositories/otp-repository'
 
@@ -14,14 +15,23 @@ function makeMocks() {
     generate: jest.fn(),
   }
 
-  return { otpRepository, otpProvider }
+  const hashProvider: Partial<jest.Mocked<HashProvider>> = {
+    hash: jest.fn(),
+  }
+
+  return { otpRepository, otpProvider, hashProvider }
 }
 
 function makeUseCase(
   otpRepository: Partial<jest.Mocked<OTPRepository>>,
-  otpProvider: Partial<jest.Mocked<OTPProvider>>
+  otpProvider: Partial<jest.Mocked<OTPProvider>>,
+  hashProvider: Partial<jest.Mocked<HashProvider>>
 ) {
-  return new GenerateOTPUseCase(otpRepository as OTPRepository, otpProvider as OTPProvider)
+  return new GenerateOTPUseCase(
+    otpRepository as OTPRepository,
+    otpProvider as OTPProvider,
+    hashProvider as HashProvider
+  )
 }
 
 describe('[use-case] generate otp', () => {
@@ -30,8 +40,8 @@ describe('[use-case] generate otp', () => {
   })
 
   it('should generate an OTP and save it to the repository', async () => {
-    const { otpRepository, otpProvider } = makeMocks()
-    const useCase = makeUseCase(otpRepository, otpProvider)
+    const { otpRepository, otpProvider, hashProvider } = makeMocks()
+    const useCase = makeUseCase(otpRepository, otpProvider, hashProvider)
 
     otpProvider.generate!.mockResolvedValue('123456')
 
@@ -42,5 +52,25 @@ describe('[use-case] generate otp', () => {
     const result = await useCase.execute(request)
 
     expect(result.otp).toBe('123456')
+  })
+
+  it('should call save method with hashed OTP', async () => {
+    const { otpRepository, otpProvider, hashProvider } = makeMocks()
+    const useCase = makeUseCase(otpRepository, otpProvider, hashProvider)
+
+    otpProvider.generate!.mockResolvedValue('123456')
+    hashProvider.hash!.mockResolvedValue('hashed-123456')
+
+    const request = {
+      email: faker.internet.email(),
+    }
+
+    await useCase.execute(request)
+
+    expect(otpRepository.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        otp: 'hashed-123456',
+      })
+    )
   })
 })
