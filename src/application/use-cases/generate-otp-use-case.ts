@@ -13,10 +13,6 @@ export interface GenerateOTPRequest {
   email: string
 }
 
-export interface GenerateOTPResponse {
-  otp: string
-}
-
 export class GenerateOTPUseCase {
   constructor(
     private otpRepository: OTPRepository,
@@ -24,7 +20,7 @@ export class GenerateOTPUseCase {
     private hashProvider: HashProvider
   ) {}
 
-  async execute({ email }: GenerateOTPRequest): Promise<GenerateOTPResponse> {
+  async execute({ email }: GenerateOTPRequest): Promise<OTPToken> {
     const rawOTP = await this.otpProvider.generate({ length: OTP_LENGTH })
 
     const expiresAt = new Date(Date.now() + OTP_EXPIRATION_IN_MS)
@@ -33,12 +29,13 @@ export class GenerateOTPUseCase {
 
     const otpToken = OTPToken.create({
       email: Email.create(email),
-      otp: hashedOTP,
+      hashedOTP,
+      otp: rawOTP,
       expiresAt,
     })
 
     await this.otpRepository.save(otpToken)
 
-    return { otp: rawOTP }
+    return otpToken
   }
 }

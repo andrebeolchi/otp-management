@@ -44,6 +44,7 @@ describe('[use-case] generate otp', () => {
     const useCase = makeUseCase(otpRepository, otpProvider, hashProvider)
 
     otpProvider.generate!.mockResolvedValue('123456')
+    hashProvider.hash!.mockResolvedValue('hashed-123456')
 
     const request = {
       email: faker.internet.email(),
@@ -52,25 +53,7 @@ describe('[use-case] generate otp', () => {
     const result = await useCase.execute(request)
 
     expect(result.otp).toBe('123456')
-  })
-
-  it('should call save method with hashed OTP', async () => {
-    const { otpRepository, otpProvider, hashProvider } = makeMocks()
-    const useCase = makeUseCase(otpRepository, otpProvider, hashProvider)
-
-    otpProvider.generate!.mockResolvedValue('123456')
-    hashProvider.hash!.mockResolvedValue('hashed-123456')
-
-    const request = {
-      email: faker.internet.email(),
-    }
-
-    await useCase.execute(request)
-
-    expect(otpRepository.save).toHaveBeenCalledWith(
-      expect.objectContaining({
-        otp: 'hashed-123456',
-      })
-    )
+    expect(result.hashedOTP).toBe('hashed-123456')
+    expect(result.isExpired()).toBe(false)
   })
 })
