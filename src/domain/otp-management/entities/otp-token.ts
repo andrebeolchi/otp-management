@@ -5,6 +5,7 @@ import { Email } from '~/domain/otp-management/value-objects/email'
 export interface OTPTokenProps {
   email: Email
   otp: string
+  hashedOTP: string
   expiresAt: Date
   createdAt: Date
 }
@@ -21,6 +22,10 @@ export class OTPToken extends Entity<OTPTokenProps> {
 
   public get otp(): string {
     return this.props.otp
+  }
+
+  public get hashedOTP(): string {
+    return this.props.hashedOTP
   }
 
   public get expiresAt(): Date {
