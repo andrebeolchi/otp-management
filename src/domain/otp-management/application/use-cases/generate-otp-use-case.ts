@@ -1,39 +1,42 @@
+import { Recipient } from '~/domain/otp-management/entities/value-objects/recipient'
+
 import { OTPToken } from '~/domain/otp-management/entities/otp-token'
 
-import { HashProvider } from '~/domain/otp-management/application/repositories/hash-provider'
 import { OTPProvider } from '~/domain/otp-management/application/repositories/otp-provider'
 import { OTPRepository } from '~/domain/otp-management/application/repositories/otp-repository'
 
-const OTP_LENGTH = 6
-const OTP_EXPIRATION_IN_MS = 30 * 1000 // 30 seconds
-
 export interface GenerateOTPRequest {
-  email: string
+  recipientType: 'email' | 'sms'
+  recipientValue: string
 }
 
 export class GenerateOTPUseCase {
   constructor(
     private otpRepository: OTPRepository,
     private otpProvider: OTPProvider,
-    private hashProvider: HashProvider
+    private otpLength: number,
+    private otpExpirationInMs: number
   ) {}
 
-  async execute({ email }: GenerateOTPRequest): Promise<OTPToken> {
-    const existingOTP = await this.otpRepository.findByEmail(email)
+  async execute(request: GenerateOTPRequest): Promise<OTPToken> {
+    const recipient = Recipient.create({
+      type: request.recipientType,
+      value: request.recipientValue,
+    })
+
+    const existingOTP = await this.otpRepository.findValidByRecipient(recipient)
 
     if (existingOTP) {
-      await this.otpRepository.deleteByEmail(existingOTP.email)
+      await this.otpRepository.invalidate(existingOTP)
     }
 
-    const otp = await this.otpProvider.generate({ length: OTP_LENGTH })
-    const hashedOTP = await this.hashProvider.hash(otp)
-    const expiresAt = new Date(Date.now() + OTP_EXPIRATION_IN_MS)
+    const otpCode = await this.otpProvider.generate({ length: this.otpLength })
 
     const otpToken = OTPToken.create({
-      email,
-      hashedOTP,
-      otp,
-      expiresAt,
+      token: otpCode,
+      recipient,
+      expiresAt: new Date(Date.now() + this.otpExpirationInMs),
+      isValid: true,
     })
 
     await this.otpRepository.save(otpToken)

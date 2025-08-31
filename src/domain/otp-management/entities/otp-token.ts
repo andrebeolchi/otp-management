@@ -1,11 +1,13 @@
 import { Entity } from '~/domain/commons/entity'
 
-export interface OTPTokenProps {
-  email: string
-  otp: string
-  hashedOTP: string
+import { Recipient } from './value-objects/recipient'
+
+interface OTPTokenProps {
+  recipient: Recipient
+  token: string
   expiresAt: Date
   createdAt: Date
+  isValid: boolean
 }
 
 export class OTPToken extends Entity<OTPTokenProps> {
@@ -14,16 +16,12 @@ export class OTPToken extends Entity<OTPTokenProps> {
     return otpToken
   }
 
-  public get email(): string {
-    return this.props.email
+  public get recipient(): Recipient {
+    return this.props.recipient
   }
 
-  public get otp(): string {
-    return this.props.otp
-  }
-
-  public get hashedOTP(): string {
-    return this.props.hashedOTP
+  public get token(): string {
+    return this.props.token
   }
 
   public get expiresAt(): Date {
@@ -32,6 +30,10 @@ export class OTPToken extends Entity<OTPTokenProps> {
 
   public get createdAt(): Date {
     return this.props.createdAt
+  }
+
+  public get isValid(): boolean {
+    return this.props.isValid
   }
 
   public isExpired(): boolean {

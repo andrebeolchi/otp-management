@@ -1,89 +1,98 @@
-import { HashProvider } from '~/domain/otp-management/application/repositories/hash-provider'
-import { OTPProvider } from '~/domain/otp-management/application/repositories/otp-provider'
-import { OTPRepository } from '~/domain/otp-management/application/repositories/otp-repository'
+import { mock } from 'jest-mock-extended'
+
 import { GenerateOTPUseCase } from '~/domain/otp-management/application/use-cases/generate-otp-use-case'
 
-import { Request } from '~/adapters/controllers/interfaces/request'
+import { errorHandler } from '~/adapters/controllers/interfaces/error-handler'
 import { SchemaValidator } from '~/adapters/controllers/interfaces/schema-validator'
 
-import { Body, GenerateOTPController } from './generate'
+import { GenerateOTPController, Body } from './generate'
 
-function makeMocks() {
-  const otpRepository: Partial<jest.Mocked<OTPRepository>> = { save: jest.fn() }
-  const otpProvider: Partial<jest.Mocked<OTPProvider>> = { generate: jest.fn() }
-  const hashProvider: Partial<jest.Mocked<HashProvider>> = { hash: jest.fn() }
-  const schemaValidator: Partial<jest.Mocked<SchemaValidator<Body>>> = { execute: jest.fn() }
+jest.mock('~/adapters/controllers/interfaces/error-handler', () => ({
+  errorHandler: jest.fn(),
+}))
 
-  return { otpRepository, otpProvider, hashProvider, schemaValidator }
-}
+describe('[controller] generate otp', () => {
+  const generateOTPUseCase = mock<GenerateOTPUseCase>()
+  const schemaValidator = mock<SchemaValidator<Body>>()
+  const controller = new GenerateOTPController(generateOTPUseCase, schemaValidator)
 
-function makeUseCase(
-  otpRepository: Partial<jest.Mocked<OTPRepository>>,
-  otpProvider: Partial<jest.Mocked<OTPProvider>>,
-  hashProvider: Partial<jest.Mocked<HashProvider>>
-) {
-  return new GenerateOTPUseCase(
-    otpRepository as OTPRepository,
-    otpProvider as OTPProvider,
-    hashProvider as HashProvider
-  )
-}
-
-describe('[controller] generate otp controller', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
-  it('should return 201 and OTP when input is valid', async () => {
-    const { otpRepository, otpProvider, hashProvider, schemaValidator } = makeMocks()
-    const useCase = makeUseCase(otpRepository, otpProvider, hashProvider)
+  it('should return 201 when OTP is generated successfully', async () => {
+    const request = {
+      body: {
+        recipientType: 'email' as const,
+        recipientValue: 'test@example.com',
+      },
+    }
 
-    schemaValidator.execute!.mockReturnValue({ data: { email: 'test@example.com' }, errors: [] })
-    useCase.execute = jest.fn().mockResolvedValue({ otp: '123456' })
+    schemaValidator.execute.mockReturnValue({
+      data: request.body,
+      errors: [],
+    })
 
-    const controller = new GenerateOTPController(useCase, schemaValidator as SchemaValidator<Body>)
-    const request = { body: { email: 'test@example.com' } } as Request<Body>
-
+    //@ts-expect-error mocking
     const response = await controller.execute(request)
 
+    expect(schemaValidator.execute).toHaveBeenCalledWith(request.body)
+    expect(generateOTPUseCase.execute).toHaveBeenCalledWith(request.body)
     expect(response.status).toBe(201)
-    expect(response.body).toEqual({ otp: '123456' })
-    expect(useCase.execute).toHaveBeenCalledWith({ email: 'test@example.com' })
+    expect(response.body).toEqual([{ message: 'OTP generated successfully' }])
   })
 
   it('should return 400 when validation fails', async () => {
-    const { otpRepository, otpProvider, hashProvider, schemaValidator } = makeMocks()
-    const useCase = makeUseCase(otpRepository, otpProvider, hashProvider)
-    const errors = [{ path: 'email', message: 'Invalid email' }]
+    const request = {
+      body: {
+        recipientType: 'email',
+        recipientValue: '',
+      },
+    }
+
+    schemaValidator.execute.mockReturnValue({
+      data: {
+        recipientType: 'email',
+        recipientValue: '',
+      },
+      errors: [{ message: 'Invalid recipient value', path: 'recipientValue' }],
+    })
 
     //@ts-expect-error mocking
-    schemaValidator.execute!.mockReturnValue({ data: null, errors })
-    useCase.execute = jest.fn()
-
-    const controller = new GenerateOTPController(useCase, schemaValidator as SchemaValidator<Body>)
-    const request = { body: { email: 'invalid-email' } } as Request<Body>
-
     const response = await controller.execute(request)
 
+    expect(schemaValidator.execute).toHaveBeenCalledWith(request.body)
+    expect(generateOTPUseCase.execute).not.toHaveBeenCalled()
     expect(response.status).toBe(400)
-    expect(response.body).toEqual(errors)
-    expect(useCase.execute).not.toHaveBeenCalled()
+    expect(response.body).toEqual([{ message: 'Invalid recipient value', path: 'recipientValue' }])
   })
 
-  it('should handle use case errors with errorHandler', async () => {
-    const { otpRepository, otpProvider, hashProvider, schemaValidator } = makeMocks()
-    const useCase = makeUseCase(otpRepository, otpProvider, hashProvider)
-    const error = new Error('Something went wrong')
+  it('should handle errors and return appropriate response', async () => {
+    const request = {
+      body: {
+        recipientType: 'email' as const,
+        recipientValue: 'test@example.com',
+      },
+    }
 
-    schemaValidator.execute!.mockReturnValue({ data: { email: 'test@example.com' }, errors: [] })
-    useCase.execute = jest.fn().mockRejectedValue(error)
+    schemaValidator.execute.mockReturnValue({
+      data: request.body,
+      errors: [],
+    })
 
-    const controller = new GenerateOTPController(useCase, schemaValidator as SchemaValidator<Body>)
-    const request = { body: { email: 'test@example.com' } } as Request<Body>
+    const error = new Error('Unexpected error')
+    generateOTPUseCase.execute.mockRejectedValue(error)
+    ;(errorHandler as jest.Mock).mockReturnValue({
+      status: 500,
+      body: [{ message: 'Internal server error' }],
+    })
 
+    //@ts-expect-error mocking
     const response = await controller.execute(request)
 
-    expect(response.status).toBeDefined()
-    expect(response.body).toBeDefined()
+    expect(schemaValidator.execute).toHaveBeenCalledWith(request.body)
+    expect(generateOTPUseCase.execute).toHaveBeenCalledWith(request.body)
+    expect(response.status).toBe(500)
+    expect(response.body).toEqual([{ message: 'Internal server error' }])
   })
 })

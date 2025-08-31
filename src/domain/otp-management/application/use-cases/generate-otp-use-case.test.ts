@@ -1,86 +1,76 @@
 import { faker } from '@faker-js/faker'
+import { mock, MockProxy } from 'jest-mock-extended'
 
-import { HashProvider } from '~/domain/otp-management/application/repositories/hash-provider'
+import { Recipient } from '~/domain/otp-management/entities/value-objects/recipient'
+
+import { OTPToken } from '~/domain/otp-management/entities/otp-token'
+
 import { OTPProvider } from '~/domain/otp-management/application/repositories/otp-provider'
 import { OTPRepository } from '~/domain/otp-management/application/repositories/otp-repository'
 
-import { GenerateOTPUseCase } from './generate-otp-use-case'
+import { GenerateOTPRequest, GenerateOTPUseCase } from './generate-otp-use-case'
 
-function makeMocks() {
-  const otpRepository: Partial<jest.Mocked<OTPRepository>> = {
-    save: jest.fn(),
-    findByEmail: jest.fn(),
-    deleteByEmail: jest.fn(),
-  }
+describe('[use-cases] generate otp', () => {
+  const OTP_LENGTH = 6
+  const OTP_EXPIRATION_IN_MS = 5 * 60 * 1000
 
-  const otpProvider: Partial<jest.Mocked<OTPProvider>> = {
-    generate: jest.fn(),
-  }
+  let otpRepository: MockProxy<OTPRepository>
+  let otpProvider: MockProxy<OTPProvider>
+  let generateOTPUseCase: GenerateOTPUseCase
 
-  const hashProvider: Partial<jest.Mocked<HashProvider>> = {
-    hash: jest.fn(),
-  }
+  beforeAll(() => {
+    otpRepository = mock<OTPRepository>()
+    otpProvider = mock<OTPProvider>()
 
-  return { otpRepository, otpProvider, hashProvider }
-}
-
-function makeUseCase(
-  otpRepository: Partial<jest.Mocked<OTPRepository>>,
-  otpProvider: Partial<jest.Mocked<OTPProvider>>,
-  hashProvider: Partial<jest.Mocked<HashProvider>>
-) {
-  return new GenerateOTPUseCase(
-    otpRepository as OTPRepository,
-    otpProvider as OTPProvider,
-    hashProvider as HashProvider
-  )
-}
-
-describe('[use-case] generate otp', () => {
-  beforeEach(() => {
-    jest.clearAllMocks()
+    generateOTPUseCase = new GenerateOTPUseCase(otpRepository, otpProvider, OTP_LENGTH, OTP_EXPIRATION_IN_MS)
   })
 
-  it('should generate an OTP and save it to the repository', async () => {
-    const { otpRepository, otpProvider, hashProvider } = makeMocks()
-    const useCase = makeUseCase(otpRepository, otpProvider, hashProvider)
+  it('should generate a new OTP when no valid OTP exists', async () => {
+    otpRepository.findValidByRecipient.mockResolvedValue(null)
+    otpProvider.generate.mockResolvedValue('123456')
 
-    otpProvider.generate!.mockResolvedValue('123456')
-    hashProvider.hash!.mockResolvedValue('hashed-123456')
-
-    const request = {
-      email: faker.internet.email(),
+    const request: GenerateOTPRequest = {
+      recipientType: 'email',
+      recipientValue: faker.internet.email(),
     }
 
-    const result = await useCase.execute(request)
+    const result = await generateOTPUseCase.execute(request)
 
-    expect(result.otp).toBe('123456')
-    expect(result.hashedOTP).toBe('hashed-123456')
-    expect(result.isExpired()).toBe(false)
+    expect(result.token).toBe('123456')
+    expect(result.recipient.type).toBe('email')
+    expect(result.recipient.value).toBe(request.recipientValue)
+    expect(result.isValid).toBe(true)
+    expect(result.expiresAt.getTime()).toBeGreaterThan(Date.now())
   })
 
-  it('should delete existing OTP before generating a new one', async () => {
-    const { otpRepository, otpProvider, hashProvider } = makeMocks()
-    const useCase = makeUseCase(otpRepository, otpProvider, hashProvider)
+  it('should invalidate an existing OTP before generating a new one', async () => {
+    const recipient = Recipient.create({
+      type: 'email',
+      value: faker.internet.email(),
+    })
 
-    const existingOTP = {
-      createdAt: new Date(),
-      email: faker.internet.email(),
-      expiresAt: new Date(Date.now() + 30000),
-      hashedOTP: 'old-hashed-otp',
-      otp: '654321',
+    const existingOTP = OTPToken.create({
+      token: '654321',
+      recipient,
+      isValid: true,
+      expiresAt: new Date(Date.now() + 2 * 60 * 1000),
+    })
+
+    otpRepository.findValidByRecipient.mockResolvedValue(existingOTP)
+    otpProvider.generate.mockResolvedValue('123456')
+
+    const request: GenerateOTPRequest = {
+      recipientType: 'email',
+      recipientValue: recipient.value,
     }
 
-    otpProvider.generate!.mockResolvedValue('123456')
-    hashProvider.hash!.mockResolvedValue('hashed-123456')
-    otpRepository.findByEmail!.mockResolvedValue(existingOTP)
+    const result = await generateOTPUseCase.execute(request)
 
-    const request = { email: existingOTP.email }
-
-    const result = await useCase.execute(request)
-
-    expect(otpRepository.deleteByEmail).toHaveBeenCalledWith(existingOTP.email)
-    expect(otpRepository.save).toHaveBeenCalledTimes(1)
-    expect(result.hashedOTP).toBe('hashed-123456')
+    expect(otpRepository.invalidate).toHaveBeenCalledWith(existingOTP)
+    expect(result.token).toBe('123456')
+    expect(result.recipient.type).toBe('email')
+    expect(result.recipient.value).toBe(request.recipientValue)
+    expect(result.isValid).toBe(true)
+    expect(result.expiresAt.getTime()).toBeGreaterThan(Date.now())
   })
 })

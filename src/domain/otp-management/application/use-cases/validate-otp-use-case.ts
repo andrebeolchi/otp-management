@@ -1,38 +1,31 @@
-import { HashProvider } from '~/domain/otp-management/application/repositories/hash-provider'
+import { Recipient } from '~/domain/otp-management/entities/value-objects/recipient'
+
 import { OTPRepository } from '~/domain/otp-management/application/repositories/otp-repository'
 
 export interface ValidateOTPRequest {
-  email: string
   otp: string
+  recipientType: 'email' | 'sms'
+  recipientValue: string
 }
 
 export class ValidateOTPUseCase {
-  constructor(
-    private otpRepository: OTPRepository,
-    private hashProvider: HashProvider
-  ) {}
+  constructor(private otpRepository: OTPRepository) {}
 
-  async execute({ email, otp }: ValidateOTPRequest): Promise<boolean> {
-    const existingOTP = await this.otpRepository.findByEmail(email)
+  async execute({ otp, recipientType, recipientValue }: ValidateOTPRequest): Promise<boolean> {
+    const recipient = Recipient.create({ type: recipientType, value: recipientValue })
+
+    const existingOTP = await this.otpRepository.findValidByRecipient(recipient)
 
     if (!existingOTP) {
       return false
     }
 
-    const isOTPValid = await this.hashProvider.compare(otp, existingOTP.hashedOTP)
-
-    if (!isOTPValid) {
+    if (existingOTP.token !== otp) {
       return false
     }
 
-    const isOTPExpired = existingOTP.expiresAt < new Date()
+    await this.otpRepository.invalidate(existingOTP)
 
-    if (isOTPExpired) {
-      await this.otpRepository.deleteByEmail(email)
-      return false
-    }
-
-    await this.otpRepository.deleteByEmail(email)
-    return true
+    return !existingOTP.isExpired()
   }
 }

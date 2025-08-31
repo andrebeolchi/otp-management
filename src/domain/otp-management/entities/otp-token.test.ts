@@ -1,39 +1,65 @@
+import { faker } from '@faker-js/faker'
+
 import { OTPToken } from './otp-token'
+import { Recipient } from './value-objects/recipient'
 
 describe('[entity] otp token', () => {
-  describe('create', () => {
-    it('should create an otp token', () => {
-      const email = 'test@example.com'
-      const otp = '123456'
-      const expiresAt = new Date(Date.now() + 1000 * 60)
+  const recipient = Recipient.create({ type: 'email', value: faker.internet.email() })
+  const token = '123456'
+  const expiresAt = new Date(Date.now() + 1000 * 60 * 10) // 10 minutes from now
+  const isValid = true
 
-      const token = OTPToken.create({ email, otp, expiresAt })
+  it('should create an OTPToken instance', () => {
+    const otpToken = OTPToken.create({ recipient, token, expiresAt, isValid })
 
-      expect(token.id).toBeTruthy()
-      expect(token.email).toBe('test@example.com')
-      expect(token.otp).toBe(otp)
-      expect(token.expiresAt).toBe(expiresAt)
-      expect(token.createdAt).toBeInstanceOf(Date)
-    })
+    expect(otpToken).toBeInstanceOf(OTPToken)
+    expect(otpToken.recipient).toEqual(recipient)
+    expect(otpToken.token).toBe(token)
+    expect(otpToken.expiresAt).toEqual(expiresAt)
+    expect(otpToken.isValid).toBe(isValid)
+    expect(otpToken.createdAt).toBeInstanceOf(Date)
   })
 
-  describe('isExpired', () => {
-    it('should return false if token is not expired', () => {
-      const email = 'test@example.com'
-      const otp = '123456'
-      const expiresAt = new Date(Date.now() + 1000 * 60)
+  it('should return true for isExpired if the current date is past expiresAt', () => {
+    const expiredDate = new Date(Date.now() - 1000 * 60) // 1 minute ago
+    const otpToken = OTPToken.create({ recipient, token, expiresAt: expiredDate, isValid })
 
-      const token = OTPToken.create({ email, otp, expiresAt })
-      expect(token.isExpired()).toBe(false)
-    })
+    expect(otpToken.isExpired()).toBe(true)
+  })
 
-    it('should return true if token is expired', () => {
-      const email = 'test@example.com'
-      const otp = '123456'
-      const pastDate = new Date(Date.now() - 1000 * 60)
+  it('should return false for isExpired if the current date is before expiresAt', () => {
+    const otpToken = OTPToken.create({ recipient, token, expiresAt, isValid })
 
-      const token = OTPToken.create({ email, otp, expiresAt: pastDate })
-      expect(token.isExpired()).toBe(true)
-    })
+    expect(otpToken.isExpired()).toBe(false)
+  })
+
+  it('should return the correct recipient', () => {
+    const otpToken = OTPToken.create({ recipient, token, expiresAt, isValid })
+
+    expect(otpToken.recipient).toEqual(recipient)
+  })
+
+  it('should return the correct token', () => {
+    const otpToken = OTPToken.create({ recipient, token, expiresAt, isValid })
+
+    expect(otpToken.token).toBe(token)
+  })
+
+  it('should return the correct expiresAt date', () => {
+    const otpToken = OTPToken.create({ recipient, token, expiresAt, isValid })
+
+    expect(otpToken.expiresAt).toEqual(expiresAt)
+  })
+
+  it('should return the correct createdAt date', () => {
+    const otpToken = OTPToken.create({ recipient, token, expiresAt, isValid })
+
+    expect(otpToken.createdAt).toBeInstanceOf(Date)
+  })
+
+  it('should return the correct isValid value', () => {
+    const otpToken = OTPToken.create({ recipient, token, expiresAt, isValid })
+
+    expect(otpToken.isValid).toBe(isValid)
   })
 })

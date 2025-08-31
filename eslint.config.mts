@@ -45,7 +45,7 @@ export default defineConfig([
           groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
           pathGroups: [
             { pattern: '~/domain/commons/**', group: 'internal', position: 'before' },
-            { pattern: '~/domain/**/value-objects/**', group: 'internal', position: 'before' },
+            { pattern: '~/domain/**/entities/value-objects/**', group: 'internal', position: 'before' },
             { pattern: '~/domain/**/entities/**', group: 'internal', position: 'before' },
             { pattern: '~/domain/**', group: 'internal', position: 'before' },
 

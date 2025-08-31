@@ -6,11 +6,8 @@ import { Response } from '~/adapters/controllers/interfaces/response'
 import { SchemaValidator } from '~/adapters/controllers/interfaces/schema-validator'
 
 export interface Body {
-  email: string
-}
-
-export interface ResponseBody {
-  otp: string
+  recipientType: 'email'
+  recipientValue: string
 }
 
 export class GenerateOTPController {
@@ -19,7 +16,7 @@ export class GenerateOTPController {
     private schemaValidator: SchemaValidator<Body>
   ) {}
 
-  async execute({ body }: Request<Body>): Promise<Response<ResponseBody>> {
+  async execute({ body }: Request<Body>): Promise<Response> {
     try {
       const { data, errors } = this.schemaValidator.execute(body)
 
@@ -30,11 +27,14 @@ export class GenerateOTPController {
         }
       }
 
-      const result = await this.generateOTPUseCase.execute({ email: data.email })
+      await this.generateOTPUseCase.execute({
+        recipientType: data.recipientType,
+        recipientValue: data.recipientValue,
+      })
 
       return {
         status: 201,
-        body: result,
+        body: [{ message: 'OTP generated successfully' }],
       }
     } catch (error) {
       return errorHandler(error)

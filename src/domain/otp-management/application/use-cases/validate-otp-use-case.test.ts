@@ -1,91 +1,131 @@
-import { HashProvider } from '~/domain/otp-management/application/repositories/hash-provider'
+import { mock, MockProxy } from 'jest-mock-extended'
+
+import { Recipient } from '~/domain/otp-management/entities/value-objects/recipient'
+
+import { OTPToken } from '~/domain/otp-management/entities/otp-token'
+
 import { OTPRepository } from '~/domain/otp-management/application/repositories/otp-repository'
-import { ValidateOTPUseCase } from '~/domain/otp-management/application/use-cases/validate-otp-use-case'
 
-function makeMocks() {
-  const otpRepository: Partial<jest.Mocked<OTPRepository>> = {
-    save: jest.fn(),
-    findByEmail: jest.fn(),
-    deleteByEmail: jest.fn(),
-  }
+import { ValidateOTPUseCase } from './validate-otp-use-case'
 
-  const hashProvider: Partial<jest.Mocked<HashProvider>> = {
-    hash: jest.fn(),
-    compare: jest.fn(),
-  }
+describe('[use-cases] validate otp', () => {
+  let otpRepository: MockProxy<OTPRepository>
+  let validateOTPUseCase: ValidateOTPUseCase
 
-  return { otpRepository, hashProvider }
-}
-
-function makeUseCase(
-  otpRepository: Partial<jest.Mocked<OTPRepository>>,
-  hashProvider: Partial<jest.Mocked<HashProvider>>
-) {
-  return new ValidateOTPUseCase(otpRepository as OTPRepository, hashProvider as HashProvider)
-}
-
-describe('ValidateOTPUseCase', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    otpRepository = mock<OTPRepository>()
+    validateOTPUseCase = new ValidateOTPUseCase(otpRepository)
   })
 
-  it('should return false if no OTP exists for the given email', async () => {
-    const { otpRepository, hashProvider } = makeMocks()
-    const useCase = makeUseCase(otpRepository, hashProvider)
+  it('should return false if no valid OTP exists for the recipient', async () => {
+    otpRepository.findValidByRecipient.mockResolvedValue(null)
 
-    otpRepository.findByEmail!.mockResolvedValue(null)
-
-    const result = await useCase.execute({ email: 'test@example.com', otp: '123456' })
+    const result = await validateOTPUseCase.execute({
+      otp: '123456',
+      recipientType: 'email',
+      recipientValue: 'test@example.com',
+    })
 
     expect(result).toBe(false)
   })
 
-  it('should return false if the OTP is invalid', async () => {
-    const { otpRepository, hashProvider } = makeMocks()
-    const useCase = makeUseCase(otpRepository, hashProvider)
-
-    //@ts-expect-error mocking
-    otpRepository.findByEmail!.mockResolvedValue({
-      hashedOTP: 'hashed_otp',
-      expiresAt: new Date(Date.now() + 10000),
+  it('should return false if the OTP does not match', async () => {
+    const recipient = Recipient.create({ type: 'email', value: 'test@example.com' })
+    const existingOTP = OTPToken.create({
+      token: '654321',
+      recipient,
+      expiresAt: new Date(Date.now() + 1000 * 60 * 5),
+      isValid: true,
     })
-    hashProvider.compare!.mockResolvedValue(false)
 
-    const result = await useCase.execute({ email: 'test@example.com', otp: '123456' })
+    otpRepository.findValidByRecipient.mockResolvedValue(existingOTP)
+
+    const result = await validateOTPUseCase.execute({
+      otp: '123456',
+      recipientType: 'email',
+      recipientValue: 'test@example.com',
+    })
 
     expect(result).toBe(false)
   })
 
   it('should return false if the OTP is expired', async () => {
-    const { otpRepository, hashProvider } = makeMocks()
-    const useCase = makeUseCase(otpRepository, hashProvider)
-
-    //@ts-expect-error mocking
-    otpRepository.findByEmail!.mockResolvedValue({
-      hashedOTP: 'hashed_otp',
-      expiresAt: new Date(Date.now() - 10000),
+    const recipient = Recipient.create({ type: 'email', value: 'test@example.com' })
+    const existingOTP = OTPToken.create({
+      token: '123456',
+      recipient,
+      expiresAt: new Date(Date.now() - 1000 * 60 * 5),
+      isValid: true,
     })
-    hashProvider.compare!.mockResolvedValue(true)
 
-    const result = await useCase.execute({ email: 'test@example.com', otp: '123456' })
+    otpRepository.findValidByRecipient.mockResolvedValue(existingOTP)
+
+    const result = await validateOTPUseCase.execute({
+      otp: '123456',
+      recipientType: 'email',
+      recipientValue: 'test@example.com',
+    })
 
     expect(result).toBe(false)
   })
 
-  it('should return true and delete the OTP if it is valid and not expired', async () => {
-    const { otpRepository, hashProvider } = makeMocks()
-    const useCase = makeUseCase(otpRepository, hashProvider)
-
-    //@ts-expect-error mocking
-    otpRepository.findByEmail!.mockResolvedValue({
-      hashedOTP: 'hashed_otp',
-      expiresAt: new Date(Date.now() + 10000),
+  it('should return true if the OTP is valid and not expired', async () => {
+    const recipient = Recipient.create({ type: 'email', value: 'test@example.com' })
+    const existingOTP = OTPToken.create({
+      token: '123456',
+      recipient,
+      expiresAt: new Date(Date.now() + 1000 * 60 * 5),
+      isValid: true,
     })
-    hashProvider.compare!.mockResolvedValue(true)
 
-    const result = await useCase.execute({ email: 'test@example.com', otp: '123456' })
+    otpRepository.findValidByRecipient.mockResolvedValue(existingOTP)
+
+    const result = await validateOTPUseCase.execute({
+      otp: '123456',
+      recipientType: 'email',
+      recipientValue: 'test@example.com',
+    })
 
     expect(result).toBe(true)
-    expect(otpRepository.deleteByEmail).toHaveBeenCalledWith('test@example.com')
+  })
+
+  it('should invalidate if the OTP is expired', async () => {
+    const recipient = Recipient.create({ type: 'email', value: 'test@example.com' })
+    const existingOTP = OTPToken.create({
+      token: '123456',
+      recipient,
+      expiresAt: new Date(Date.now() - 1000 * 60 * 5),
+      isValid: true,
+    })
+
+    otpRepository.findValidByRecipient.mockResolvedValue(existingOTP)
+
+    await validateOTPUseCase.execute({
+      otp: '123456',
+      recipientType: 'email',
+      recipientValue: 'test@example.com',
+    })
+
+    expect(otpRepository.invalidate).toHaveBeenCalledWith(existingOTP)
+  })
+
+  it('should invalidate if the OTP is valid and not expired', async () => {
+    const recipient = Recipient.create({ type: 'email', value: 'test@example.com' })
+    const existingOTP = OTPToken.create({
+      token: '123456',
+      recipient,
+      expiresAt: new Date(Date.now() + 1000 * 60 * 5),
+      isValid: true,
+    })
+
+    otpRepository.findValidByRecipient.mockResolvedValue(existingOTP)
+
+    await validateOTPUseCase.execute({
+      otp: '123456',
+      recipientType: 'email',
+      recipientValue: 'test@example.com',
+    })
+
+    expect(otpRepository.invalidate).toHaveBeenCalledWith(existingOTP)
   })
 })
