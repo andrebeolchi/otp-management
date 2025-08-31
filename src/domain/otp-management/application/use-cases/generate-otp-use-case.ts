@@ -1,5 +1,3 @@
-import { Email } from '~/domain/otp-management/value-objects/email'
-
 import { OTPToken } from '~/domain/otp-management/entities/otp-token'
 
 import { HashProvider } from '~/domain/otp-management/application/repositories/hash-provider'
@@ -21,16 +19,20 @@ export class GenerateOTPUseCase {
   ) {}
 
   async execute({ email }: GenerateOTPRequest): Promise<OTPToken> {
-    const rawOTP = await this.otpProvider.generate({ length: OTP_LENGTH })
+    const existingOTP = await this.otpRepository.findByEmail(email)
 
+    if (existingOTP) {
+      await this.otpRepository.deleteByEmail(existingOTP.email)
+    }
+
+    const otp = await this.otpProvider.generate({ length: OTP_LENGTH })
+    const hashedOTP = await this.hashProvider.hash(otp)
     const expiresAt = new Date(Date.now() + OTP_EXPIRATION_IN_MS)
 
-    const hashedOTP = await this.hashProvider.hash(rawOTP)
-
     const otpToken = OTPToken.create({
-      email: Email.create(email),
+      email,
       hashedOTP,
-      otp: rawOTP,
+      otp,
       expiresAt,
     })
 
