@@ -2,9 +2,9 @@ import { Email } from '~/domain/otp-management/value-objects/email'
 
 import { OTPToken } from '~/domain/otp-management/entities/otp-token'
 
-import { HashProvider } from '~/application/repositories/hash-provider'
-import { OTPProvider } from '~/application/repositories/otp-provider'
-import { OTPRepository } from '~/application/repositories/otp-repository'
+import { HashProvider } from '~/domain/otp-management/application/repositories/hash-provider'
+import { OTPProvider } from '~/domain/otp-management/application/repositories/otp-provider'
+import { OTPRepository } from '~/domain/otp-management/application/repositories/otp-repository'
 
 const OTP_LENGTH = 6
 const OTP_EXPIRATION_IN_MS = 30 * 1000 // 30 seconds

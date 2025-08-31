@@ -1,4 +1,4 @@
-import { GenerateOTPUseCase } from '~/application/use-cases/generate-otp-use-case'
+import { GenerateOTPUseCase } from '~/domain/otp-management/application/use-cases/generate-otp-use-case'
 
 import { errorHandler } from '~/adapters/controllers/interfaces/error-handler'
 import { Request } from '~/adapters/controllers/interfaces/request'

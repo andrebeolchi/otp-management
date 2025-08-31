@@ -1,8 +1,8 @@
 import { faker } from '@faker-js/faker'
 
-import { HashProvider } from '~/application/repositories/hash-provider'
-import { OTPProvider } from '~/application/repositories/otp-provider'
-import { OTPRepository } from '~/application/repositories/otp-repository'
+import { HashProvider } from '~/domain/otp-management/application/repositories/hash-provider'
+import { OTPProvider } from '~/domain/otp-management/application/repositories/otp-provider'
+import { OTPRepository } from '~/domain/otp-management/application/repositories/otp-repository'
 
 import { GenerateOTPUseCase } from './generate-otp-use-case'
 

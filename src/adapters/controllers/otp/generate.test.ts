@@ -1,8 +1,7 @@
-import { HashProvider } from '~/application/repositories/hash-provider'
-import { OTPProvider } from '~/application/repositories/otp-provider'
-import { OTPRepository } from '~/application/repositories/otp-repository'
-
-import { GenerateOTPUseCase } from '~/application/use-cases/generate-otp-use-case'
+import { HashProvider } from '~/domain/otp-management/application/repositories/hash-provider'
+import { OTPProvider } from '~/domain/otp-management/application/repositories/otp-provider'
+import { OTPRepository } from '~/domain/otp-management/application/repositories/otp-repository'
+import { GenerateOTPUseCase } from '~/domain/otp-management/application/use-cases/generate-otp-use-case'
 
 import { Request } from '~/adapters/controllers/interfaces/request'
 import { SchemaValidator } from '~/adapters/controllers/interfaces/schema-validator'

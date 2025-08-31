@@ -1,4 +1,4 @@
-import { OTPProvider } from '~/application/repositories/otp-provider'
+import { OTPProvider } from '~/domain/otp-management/application/repositories/otp-provider'
 
 export class LocalOTPProvider implements OTPProvider {
   async generate({ length }: { length: number }): Promise<string> {
