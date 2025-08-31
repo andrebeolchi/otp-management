@@ -6,7 +6,7 @@ import { Response } from '~/adapters/controllers/interfaces/response'
 import { SchemaValidator } from '~/adapters/controllers/interfaces/schema-validator'
 
 export interface Body {
-  recipientType: 'email'
+  recipientType: 'email' | 'sms'
   recipientValue: string
 }
 
