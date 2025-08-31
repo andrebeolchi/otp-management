@@ -20,26 +20,4 @@ describe('[infra] local otp provider', () => {
       expect(otp1).not.toEqual(otp2)
     })
   })
-
-  describe('compare', () => {
-    it('should return true if values are the same', async () => {
-      const otpProvider = new LocalOTPProvider()
-      const first = '123456'
-      const second = '123456'
-
-      const result = await otpProvider.compare(first, second)
-
-      expect(result).toBe(true)
-    })
-
-    it('should return false if values are different', async () => {
-      const otpProvider = new LocalOTPProvider()
-      const first = '123456'
-      const second = '654321'
-
-      const result = await otpProvider.compare(first, second)
-
-      expect(result).toBe(false)
-    })
-  })
 })

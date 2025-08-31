@@ -6,8 +6,4 @@ export class LocalOTPProvider implements OTPProvider {
     const max = 10 ** length - 1
     return Math.floor(min + Math.random() * (max - min + 1)).toString()
   }
-
-  async compare(first: string, second: string): Promise<boolean> {
-    return first === second
-  }
 }

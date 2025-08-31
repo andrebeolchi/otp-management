@@ -4,5 +4,4 @@ interface GenerateParams {
 
 export interface OTPProvider {
   generate({ length }: GenerateParams): Promise<string>
-  compare(first: string, second: string): Promise<boolean>
 }
