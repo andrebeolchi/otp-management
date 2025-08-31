@@ -2,6 +2,7 @@ import { Recipient } from '~/domain/otp-management/entities/value-objects/recipi
 
 import { OTPToken } from '~/domain/otp-management/entities/otp-token'
 
+import { NotificationProvider } from '~/domain/otp-management/application/repositories/notification-provider'
 import { OTPProvider } from '~/domain/otp-management/application/repositories/otp-provider'
 import { OTPRepository } from '~/domain/otp-management/application/repositories/otp-repository'
 
@@ -15,10 +16,11 @@ export class GenerateOTPUseCase {
     private otpRepository: OTPRepository,
     private otpProvider: OTPProvider,
     private otpLength: number,
-    private otpExpirationInMs: number
+    private otpExpirationInMs: number,
+    private notificationProvider: NotificationProvider
   ) {}
 
-  async execute(request: GenerateOTPRequest): Promise<OTPToken> {
+  async execute(request: GenerateOTPRequest) {
     const recipient = Recipient.create({
       type: request.recipientType,
       value: request.recipientValue,
@@ -41,6 +43,9 @@ export class GenerateOTPUseCase {
 
     await this.otpRepository.save(otpToken)
 
-    return otpToken
+    await this.notificationProvider.send(recipient, {
+      subject: 'Your OTP Code',
+      body: `Your OTP code is: ${otpCode}`,
+    })
   }
 }

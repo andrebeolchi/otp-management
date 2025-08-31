@@ -5,6 +5,7 @@ import { Recipient } from '~/domain/otp-management/entities/value-objects/recipi
 
 import { OTPToken } from '~/domain/otp-management/entities/otp-token'
 
+import { NotificationProvider } from '~/domain/otp-management/application/repositories/notification-provider'
 import { OTPProvider } from '~/domain/otp-management/application/repositories/otp-provider'
 import { OTPRepository } from '~/domain/otp-management/application/repositories/otp-repository'
 
@@ -17,12 +18,20 @@ describe('[use-cases] generate otp', () => {
   let otpRepository: MockProxy<OTPRepository>
   let otpProvider: MockProxy<OTPProvider>
   let generateOTPUseCase: GenerateOTPUseCase
+  let notificationProvider: MockProxy<NotificationProvider>
 
   beforeAll(() => {
     otpRepository = mock<OTPRepository>()
     otpProvider = mock<OTPProvider>()
+    notificationProvider = mock<NotificationProvider>()
 
-    generateOTPUseCase = new GenerateOTPUseCase(otpRepository, otpProvider, OTP_LENGTH, OTP_EXPIRATION_IN_MS)
+    generateOTPUseCase = new GenerateOTPUseCase(
+      otpRepository,
+      otpProvider,
+      OTP_LENGTH,
+      OTP_EXPIRATION_IN_MS,
+      notificationProvider
+    )
   })
 
   it('should generate a new OTP when no valid OTP exists', async () => {
@@ -34,13 +43,19 @@ describe('[use-cases] generate otp', () => {
       recipientValue: faker.internet.email(),
     }
 
-    const result = await generateOTPUseCase.execute(request)
+    await generateOTPUseCase.execute(request)
 
-    expect(result.token).toBe('123456')
-    expect(result.recipient.type).toBe('email')
-    expect(result.recipient.value).toBe(request.recipientValue)
-    expect(result.isValid).toBe(true)
-    expect(result.expiresAt.getTime()).toBeGreaterThan(Date.now())
+    expect(notificationProvider.send).toHaveBeenCalledTimes(1)
+    expect(notificationProvider.send).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'email',
+        value: request.recipientValue,
+      }),
+      expect.objectContaining({
+        subject: 'Your OTP Code',
+        body: 'Your OTP code is: 123456',
+      })
+    )
   })
 
   it('should invalidate an existing OTP before generating a new one', async () => {
@@ -64,13 +79,8 @@ describe('[use-cases] generate otp', () => {
       recipientValue: recipient.value,
     }
 
-    const result = await generateOTPUseCase.execute(request)
+    await generateOTPUseCase.execute(request)
 
     expect(otpRepository.invalidate).toHaveBeenCalledWith(existingOTP)
-    expect(result.token).toBe('123456')
-    expect(result.recipient.type).toBe('email')
-    expect(result.recipient.value).toBe(request.recipientValue)
-    expect(result.isValid).toBe(true)
-    expect(result.expiresAt.getTime()).toBeGreaterThan(Date.now())
   })
 })
