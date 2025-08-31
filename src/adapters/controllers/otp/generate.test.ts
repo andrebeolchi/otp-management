@@ -82,7 +82,9 @@ describe('[controller] generate otp', () => {
 
     const error = new Error('Unexpected error')
     generateOTPUseCase.execute.mockRejectedValue(error)
-    ;(errorHandler as jest.Mock).mockReturnValue({
+
+    //@ts-expect-error mocking
+    errorHandler.mockReturnValue({
       status: 500,
       body: [{ message: 'Internal server error' }],
     })
