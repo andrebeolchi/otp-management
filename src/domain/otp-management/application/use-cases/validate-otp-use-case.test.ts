@@ -26,7 +26,8 @@ describe('[use-cases] validate otp', () => {
       recipientValue: 'test@example.com',
     })
 
-    expect(result).toBe(false)
+    expect(result.isValid).toBe(false)
+    expect(result.status).toBe('invalid')
   })
 
   it('should return false if the OTP does not match', async () => {
@@ -46,7 +47,8 @@ describe('[use-cases] validate otp', () => {
       recipientValue: 'test@example.com',
     })
 
-    expect(result).toBe(false)
+    expect(result.isValid).toBe(false)
+    expect(result.status).toBe('invalid')
   })
 
   it('should return false if the OTP is expired', async () => {
@@ -66,7 +68,8 @@ describe('[use-cases] validate otp', () => {
       recipientValue: 'test@example.com',
     })
 
-    expect(result).toBe(false)
+    expect(result.isValid).toBe(false)
+    expect(result.status).toBe('expired')
   })
 
   it('should return true if the OTP is valid and not expired', async () => {
@@ -86,7 +89,8 @@ describe('[use-cases] validate otp', () => {
       recipientValue: 'test@example.com',
     })
 
-    expect(result).toBe(true)
+    expect(result.isValid).toBe(true)
+    expect(result.status).toBe('valid')
   })
 
   it('should invalidate if the OTP is expired', async () => {

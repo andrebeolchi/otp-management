@@ -8,24 +8,33 @@ export interface ValidateOTPRequest {
   recipientValue: string
 }
 
+export interface ValidateOTPResponse {
+  isValid: boolean
+  status: 'valid' | 'invalid' | 'expired'
+}
+
 export class ValidateOTPUseCase {
   constructor(private otpRepository: OTPRepository) {}
 
-  async execute({ otp, recipientType, recipientValue }: ValidateOTPRequest): Promise<boolean> {
+  async execute({ otp, recipientType, recipientValue }: ValidateOTPRequest): Promise<ValidateOTPResponse> {
     const recipient = Recipient.create({ type: recipientType, value: recipientValue })
 
     const existingOTP = await this.otpRepository.findValidByRecipient(recipient)
 
     if (!existingOTP) {
-      return false
+      return { isValid: false, status: 'invalid' }
     }
 
     if (existingOTP.token !== otp) {
-      return false
+      return { isValid: false, status: 'invalid' }
     }
 
     await this.otpRepository.invalidate(existingOTP)
 
-    return !existingOTP.isExpired()
+    if (existingOTP.isExpired()) {
+      return { isValid: false, status: 'expired' }
+    }
+
+    return { isValid: true, status: 'valid' }
   }
 }
