@@ -7,7 +7,9 @@ import { GenerateOTPController } from '~/adapters/controllers/otp/generate'
 
 import { PrismaOTPRepository } from '~/adapters/gateways/database/otp/prisma-otp-repository'
 
-import { OneSignalSMSProvider } from '~/infra/external/notification/onesignal/onesignal-sms-provider'
+import { PublisherNotificationProvider } from '~/infra/external/notification'
+import { NodemailerEmailProvider } from '~/infra/external/notification/email/nodemailer-email-provider'
+import { TwilioSMSProvider } from '~/infra/external/notification/sms/twilio-sms-provider'
 import { LocalOTPProvider } from '~/infra/external/otp/local-otp-provider'
 
 import { config } from '~/infra/config'
@@ -18,7 +20,10 @@ const otpRepositoryGateway = new PrismaOTPRepository()
 
 const otpProvider = new LocalOTPProvider()
 
-const notificationProvider = new OneSignalSMSProvider()
+const emailProvider = new NodemailerEmailProvider()
+const smsProvider = new TwilioSMSProvider()
+
+const notificationProvider = new PublisherNotificationProvider(emailProvider, smsProvider)
 
 const generateOTPUseCase = new GenerateOTPUseCase(
   otpRepositoryGateway,
