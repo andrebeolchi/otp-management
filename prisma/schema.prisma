@@ -1,0 +1,33 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RecipientType {
+  email
+  sms
+}
+
+model OtpToken {
+  id             String        @id @db.Uuid
+  token          String
+  recipientType  RecipientType @map("recipient_type")
+  recipientValue String        @map("recipient_value")
+  isValid        Boolean
+  expiresAt      DateTime      @map("expires_at")
+  createdAt      DateTime      @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  @@index([recipientType, recipientValue], name: "idx_recipient_type_value")
+  @@map("otp_tokens")
+}
