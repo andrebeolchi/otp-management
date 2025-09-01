@@ -1,5 +1,3 @@
-import { ZodError } from 'zod'
-
 import { CustomError } from '~/domain/commons/errors/custom'
 
 export function errorHandler(err: unknown) {
@@ -7,13 +5,6 @@ export function errorHandler(err: unknown) {
 
   if (process.env.NODE_ENV === 'development') {
     console.error(error)
-  }
-
-  if (error instanceof ZodError) {
-    return {
-      body: [...error.issues.map(issue => ({ message: issue.message, path: issue.path?.toString() }))],
-      status: 400,
-    }
   }
 
   if (error instanceof CustomError) {
