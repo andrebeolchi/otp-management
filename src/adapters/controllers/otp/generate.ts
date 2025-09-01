@@ -16,7 +16,7 @@ export class GenerateOTPController {
     private schemaValidator: SchemaValidator<Body>
   ) {}
 
-  async execute({ body }: Request<Body>): Promise<Response> {
+  async execute({ body }: Request<Body>): Promise<Response<{ message: string }>> {
     try {
       const { data, errors } = this.schemaValidator.execute(body)
 
@@ -34,7 +34,7 @@ export class GenerateOTPController {
 
       return {
         status: 201,
-        body: [{ message: 'OTP generated successfully' }],
+        body: { message: 'OTP generated successfully' },
       }
     } catch (error) {
       return errorHandler(error)
