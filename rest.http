@@ -1,6 +1,6 @@
-### Generate OTP - Email (Success)
 @BASE_URL=http://localhost:3000
 
+### Generate OTP - Email (Success)
 POST {{BASE_URL}}/otp
 Content-Type: application/json
 
@@ -9,13 +9,13 @@ Content-Type: application/json
   "recipientValue": "john@doe.com"
 }
 
-### Generate OTP (Failure - Invalid Recipient Type)
-@BASE_URL=http://localhost:3000
 
-POST {{BASE_URL}}/otp
+### Validate OTP (Success)
+POST {{BASE_URL}}/otp/validate
 Content-Type: application/json
 
 {
-  "recipientType": "invalid-recipient",
+  "otp": "123456",
+  "recipientType": "email",
   "recipientValue": "john@doe.com"
 }
