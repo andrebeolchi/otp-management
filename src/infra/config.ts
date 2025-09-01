@@ -1,4 +1,5 @@
 export const config = {
+  env: process.env?.NODE_ENV ?? 'development',
   otp: {
     length: process.env?.OTP_LENGTH ? +process.env?.OTP_LENGTH : 6,
     expirationInMs: process.env?.OTP_EXPIRATION_IN_MS ? +process.env?.OTP_EXPIRATION_IN_MS : 5 * 60 * 1000,

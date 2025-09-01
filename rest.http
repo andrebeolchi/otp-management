@@ -1,0 +1,21 @@
+### Generate OTP - Email (Success)
+@BASE_URL=http://localhost:3000
+
+POST {{BASE_URL}}/otp
+Content-Type: application/json
+
+{
+  "recipientType": "email",
+  "recipientValue": "john@doe.com"
+}
+
+### Generate OTP (Failure - Invalid Recipient Type)
+@BASE_URL=http://localhost:3000
+
+POST {{BASE_URL}}/otp
+Content-Type: application/json
+
+{
+  "recipientType": "invalid-recipient",
+  "recipientValue": "john@doe.com"
+}

@@ -27,9 +27,6 @@ export class PrismaOTPRepository implements OTPRepository {
         recipientType: recipient.type,
         recipientValue: recipient.value,
         isValid: true,
-        expiresAt: {
-          gt: new Date(),
-        },
       },
       orderBy: {
         createdAt: 'desc',
