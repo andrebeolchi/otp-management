@@ -34,8 +34,6 @@ const generateOTPController = new GenerateOTPController(generateOTPUseCase, sche
 
 export async function generateOTP(req: FastifyRequest, reply: FastifyReply) {
   const { body, status } = await generateOTPController.execute({
-    headers: req.headers,
-    params: req.params as Record<string, unknown>,
     body: req.body as z.infer<typeof generateOTPSchema.body>,
   })
 
