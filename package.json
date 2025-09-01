@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "tsx watch src/infra/api-rest/otp-management/server.ts",
     "prepare": "husky",
-    "postinstall": "prisma migrate generate",
+    "postinstall": "prisma generate",
     "commitlint:edit": "commitlint --edit",
     "lint": "eslint src/** --no-error-on-unmatched-pattern",
     "lint:fix": "eslint --fix src/** --no-error-on-unmatched-pattern",
