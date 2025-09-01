@@ -39,7 +39,7 @@ describe('[controller] generate otp', () => {
     expect(schemaValidator.execute).toHaveBeenCalledWith(request.body)
     expect(generateOTPUseCase.execute).toHaveBeenCalledWith(request.body)
     expect(response.status).toBe(201)
-    expect(response.body).toEqual([{ message: 'OTP generated successfully' }])
+    expect(response.body).toEqual({ message: 'OTP generated successfully' })
   })
 
   it('should return 400 when validation fails', async () => {
