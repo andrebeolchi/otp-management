@@ -1,10 +1,10 @@
 {
   "name": "otp-management",
   "version": "1.0.0",
-  "description": "api rest for otp tokens",
-  "main": "index.js",
+  "description": "A clean architecture implementation of an OTP (One-Time Password) management system using Fastify and TypeScript.",
+  "main": "src/infra/api-rest/otp-management/server.ts",
   "author": "Andre Beolchi <andregarbini2001@gmail.com>",
-  "license": "MIT",
+  "packageManager": "yarn@1.22.22",
   "scripts": {
     "dev": "tsx watch src/infra/api-rest/otp-management/server.ts",
     "prepare": "husky",
@@ -13,6 +13,19 @@
     "lint:fix": "eslint --fix src/** --no-error-on-unmatched-pattern",
     "format": "prettier --write .",
     "test": "jest"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": "eslint --fix"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.1.0",
+    "@fastify/swagger": "9.4.1",
+    "@fastify/swagger-ui": "5.2.1",
+    "@prisma/client": "^6.15.0",
+    "fastify": "5.2.1",
+    "fastify-plugin": "4.5.1",
+    "fastify-type-provider-zod": "4.0.2",
+    "zod": "3.24.1"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
@@ -41,17 +54,5 @@
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.41.0"
   },
-  "lint-staged": {
-    "*.{ts,tsx,js,jsx}": "eslint --fix"
-  },
-  "dependencies": {
-    "@fastify/cors": "^11.1.0",
-    "@fastify/swagger": "9.4.1",
-    "@fastify/swagger-ui": "5.2.1",
-    "@prisma/client": "^6.15.0",
-    "fastify": "5.2.1",
-    "fastify-plugin": "4.5.1",
-    "fastify-type-provider-zod": "4.0.2",
-    "zod": "3.24.1"
-  }
+  "license": "MIT"
 }
