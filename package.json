@@ -2,11 +2,11 @@
   "name": "otp-management",
   "version": "1.0.0",
   "description": "A clean architecture implementation of an OTP (One-Time Password) management system using Fastify and TypeScript.",
-  "main": "src/infra/api-rest/otp-management/server.ts",
+  "main": "src/infra/fastify/otp-management/server.ts",
   "author": "Andre Beolchi <andregarbini2001@gmail.com>",
   "packageManager": "yarn@1.22.22",
   "scripts": {
-    "dev:fastify": "tsup src/adapters/http/fastify/server.ts --watch",
+    "dev:fastify": "tsx src/infra/fastify/otp-management/server.ts",
     "build:fastify": "tsup --config tsup.fastify.config.ts",
     "build:lambda": "tsup --config tsup.lambda.config.ts",
     "deploy:lambda": "yarn build:lambda && serverless deploy",
