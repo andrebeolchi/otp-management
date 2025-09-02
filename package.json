@@ -8,10 +8,10 @@
   "scripts": {
     "dev:fastify": "tsx src/infra/fastify/otp-management/server.ts",
     "build:fastify": "tsup --config tsup.fastify.config.ts",
-    "build:lambda": "tsup --config tsup.lambda.config.ts",
+    "dev:lambda": "serverless offline",
+    "build:lambda": "sls package --package .serverless",
     "deploy:lambda": "yarn build:lambda && serverless deploy",
     "prepare": "husky",
-    "postinstall": "prisma generate",
     "commitlint:edit": "commitlint --edit",
     "lint": "eslint src/** --no-error-on-unmatched-pattern",
     "lint:fix": "eslint --fix src/** --no-error-on-unmatched-pattern",

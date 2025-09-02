@@ -7609,7 +7609,7 @@ semver@^7.3.8, semver@^7.5.3, semver@^7.5.4, semver@^7.6.0, semver@^7.7.1, semve
 
 serverless-esbuild@^1.55.1:
   version "1.55.1"
-  resolved "https://registry.npmjs.org/serverless-esbuild/-/serverless-esbuild-1.55.1.tgz"
+  resolved "https://registry.yarnpkg.com/serverless-esbuild/-/serverless-esbuild-1.55.1.tgz#3d95b656f5f4d38507e2d215abc0be1e551b75bf"
   integrity sha512-/tAjN1tLTj+qB9j4rwuCRil9PDJ//iBqR9IGvNoDJfFz7daqDbC2mxi1Gzx31UVG8Pm5e8oPPoXZ0GgZYKO1HQ==
   dependencies:
     "@effect/platform" "^0.65.5"

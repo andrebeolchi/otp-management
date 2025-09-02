@@ -4,12 +4,12 @@ service: otp-management-serverless
 
 plugins:
   - serverless-offline
+  - serverless-esbuild
 
 provider:
   name: aws
   runtime: nodejs20.x
   region: us-east-1
-  build: esbuild
   environment:
     DYNAMODB_TABLE: ${self:service}-${sls:stage}
   iam:
@@ -24,51 +24,24 @@ provider:
             - "arn:aws:dynamodb:${aws:region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
             - "arn:aws:dynamodb:${aws:region}:*:table/${self:provider.environment.DYNAMODB_TABLE}/index/idx_recipient_type_value"
 
-layers:
-  awsSdkLayer:
-    path: src/infra/lambda/layers/aws-sdk/
-    compatibleRuntimes:
-      - nodejs20.x
-
-  messagesLayer:
-    path: src/infra/lambda/layers/messages/
-    compatibleRuntimes:
-      - nodejs20.x
-
-  validatorsLayer:
-    path: src/infra/lambda/layers/validators/
-    compatibleRuntimes:
-      - nodejs20.x
-
 functions:
   generate:
     handler: dist/lambda/generate.generate
-    package:
-      patterns:
-        - "!node_modules/**"
-        - "!.env"
-        - "dist/lambda/**"
-    layers:
-      - !Ref AwsSdkLayerLambdaLayer
-      - !Ref MessagesLayerLambdaLayer
-      - !Ref ValidatorsLayerLambdaLayer
     events:
       - httpApi:
           path: /otp
           method: post
     environment:
       DYNAMODB_TABLE: ${self:provider.environment.DYNAMODB_TABLE}
+      TWILIO_ACCOUNT_SID: ${env:TWILIO_ACCOUNT_SID, 'fakevalue'}
+      TWILIO_AUTH_TOKEN: ${env:TWILIO_AUTH_TOKEN, 'fakevalue'}
+      TWILIO_PHONE_NUMBER: ${env:TWILIO_PHONE_NUMBER, 'fakevalue'}
+      GOOGLE_EMAIL: ${env:GOOGLE_EMAIL, 'fakevalue'}
+      GOOGLE_PASSWORD: ${env:GOOGLE_PASSWORD, 'fakevalue'}
+
 
   validate:
     handler: dist/lambda/validate.validate
-    package:
-      patterns:
-        - "!node_modules/**"
-        - "!.env"
-        - "dist/lambda/**"
-    layers:
-      - !Ref AwsSdkLayerLambdaLayer
-      - !Ref ValidatorsLayerLambdaLayer
     events:
       - httpApi:
           path: /otp/validate
@@ -103,5 +76,5 @@ resources:
               ProjectionType: ALL
         BillingMode: PAY_PER_REQUEST
 
-package:
-  individually: true
+build: 
+  esbuild: false

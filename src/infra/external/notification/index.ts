@@ -9,12 +9,11 @@ export class PublisherNotificationProvider implements NotificationProvider {
   ) {}
 
   async send(recipient: Recipient, content: Content) {
-    if (recipient.type === 'email') {
-      await this.emailProvider.send(recipient, content)
-    }
+    const fn = {
+      email: this.emailProvider.send,
+      sms: this.smsProvider.send,
+    }[recipient.type]
 
-    if (recipient.type === 'sms') {
-      await this.smsProvider.send(recipient, content)
-    }
+    await fn(recipient, content)
   }
 }
