@@ -8,7 +8,7 @@
   "scripts": {
     "dev:fastify": "tsx src/infra/fastify/otp-management/server.ts",
     "build:fastify": "tsup --config tsup.fastify.config.ts",
-    "dev:lambda": "serverless offline",
+    "dev:lambda": "yarn build:lambda && serverless offline",
     "build:lambda": "sls package --package .serverless",
     "deploy:lambda": "yarn build:lambda && serverless deploy",
     "prepare": "husky",
@@ -58,6 +58,7 @@
     "lint-staged": "^16.1.5",
     "prettier": "^3.6.2",
     "prisma": "^6.15.0",
+    "serverless-api-gateway-throttling": "^2.0.3",
     "serverless-esbuild": "^1.55.1",
     "serverless-offline": "^14.4.0",
     "ts-jest": "^29.4.1",

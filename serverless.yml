@@ -5,6 +5,12 @@ service: otp-management-serverless
 plugins:
   - serverless-offline
   - serverless-esbuild
+  - serverless-api-gateway-throttling
+
+custom:
+  apiGatewayThrottling:
+    maxRequestsPerSecond: 10
+    maxConcurrentRequests: 5
 
 provider:
   name: aws
@@ -31,6 +37,9 @@ functions:
       - httpApi:
           path: /otp
           method: post
+          throttling:
+            maxRequestsPerSecond: 10
+            maxConcurrentRequests: 5
     environment:
       DYNAMODB_TABLE: ${self:provider.environment.DYNAMODB_TABLE}
       TWILIO_ACCOUNT_SID: ${env:TWILIO_ACCOUNT_SID, 'fakevalue'}
@@ -39,13 +48,15 @@ functions:
       GOOGLE_EMAIL: ${env:GOOGLE_EMAIL, 'fakevalue'}
       GOOGLE_PASSWORD: ${env:GOOGLE_PASSWORD, 'fakevalue'}
 
-
   validate:
     handler: dist/lambda/validate.validate
     events:
       - httpApi:
           path: /otp/validate
           method: post
+          throttling:
+            maxRequestsPerSecond: 10
+            maxConcurrentRequests: 5
     environment:
       DYNAMODB_TABLE: ${self:provider.environment.DYNAMODB_TABLE}
 
@@ -76,5 +87,6 @@ resources:
               ProjectionType: ALL
         BillingMode: PAY_PER_REQUEST
 
-build: 
+build:
   esbuild: false
+  outputBuildFolder: dist/lambda
