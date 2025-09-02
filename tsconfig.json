@@ -11,6 +11,8 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
+    "outDir": "./dist",
+    "rootDir": "./src",
     "incremental": true,
     "paths": {
       "~/*": ["./src/*"],
@@ -18,6 +20,6 @@
     },
     "target": "ES2017"
   },
-  "include": ["**/*.ts", "commitlint.config.ts"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]
 }
