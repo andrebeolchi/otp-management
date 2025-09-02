@@ -6,13 +6,13 @@ interface OTPTokenProps {
   recipient: Recipient
   token: string
   expiresAt: Date
-  createdAt: Date
   isValid: boolean
+  createdAt?: Date
 }
 
 export class OTPToken extends Entity<OTPTokenProps> {
-  static create(props: Omit<OTPTokenProps, 'createdAt'>, id?: string) {
-    const otpToken = new OTPToken({ ...props, createdAt: new Date() }, id)
+  static create(props: OTPTokenProps, id?: string) {
+    const otpToken = new OTPToken({ ...props, createdAt: props.createdAt ?? new Date() }, id)
     return otpToken
   }
 
@@ -29,7 +29,7 @@ export class OTPToken extends Entity<OTPTokenProps> {
   }
 
   public get createdAt(): Date {
-    return this.props.createdAt
+    return this.props.createdAt as Date
   }
 
   public get isValid(): boolean {

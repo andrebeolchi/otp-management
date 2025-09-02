@@ -46,6 +46,7 @@ export class PrismaOTPRepository implements OTPRepository {
         token: otpRecord.token,
         expiresAt: otpRecord.expiresAt,
         isValid: otpRecord.isValid,
+        createdAt: otpRecord.createdAt,
       },
       otpRecord.id
     )
