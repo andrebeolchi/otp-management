@@ -6,6 +6,8 @@ import { errorHandler } from '~/adapters/controllers/interfaces/error-handler'
 import { Request } from '~/adapters/controllers/interfaces/request'
 import { SchemaValidator } from '~/adapters/controllers/interfaces/schema-validator'
 
+import { Logger } from '~/infra/logger'
+
 import { ValidateOTPController, Body } from './validate'
 
 jest.mock('~/adapters/controllers/interfaces/error-handler', () => ({
@@ -24,7 +26,8 @@ const request: Request<Body> = {
 describe('ValidateOTPController', () => {
   const validateOTPUseCase = mock<ValidateOTPUseCase>()
   const schemaValidator = mock<SchemaValidator<Body>>()
-  const controller = new ValidateOTPController(validateOTPUseCase, schemaValidator)
+  const logger = mock<Logger>()
+  const controller = new ValidateOTPController(validateOTPUseCase, schemaValidator, logger)
 
   beforeEach(() => {
     jest.clearAllMocks()

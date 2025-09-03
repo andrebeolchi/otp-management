@@ -16,15 +16,17 @@ export default defineConfig([
       prettier: pluginPrettier,
     },
     rules: {
+      '@typescript-eslint/no-unused-expressions': ['error', { "allowShortCircuit": true, "allowTernary": true }],
+
       '@typescript-eslint/ban-ts-comment': [
-      'error',
-      {
-        'ts-ignore': true,
-        'ts-expect-error': false,
-        'ts-nocheck': true,
-        'ts-check': true,
-      },
-    ],
+        'error',
+        {
+          'ts-ignore': true,
+          'ts-expect-error': false,
+          'ts-nocheck': true,
+          'ts-check': true,
+        },
+      ],
 
       semi: ['error', 'never'],
       'prettier/prettier': 'error',

@@ -6,8 +6,13 @@ import { OTPRepository } from '~/domain/otp-management/application/repositories/
 
 import { prisma } from '~/infra/database/prisma'
 
+import { Logger } from '~/infra/logger'
+
 export class PrismaOTPRepository implements OTPRepository {
+  constructor(private logger: Logger) {}
+
   async save(otp: OTPToken): Promise<void> {
+    this.logger.debug('saving OTP token to database', { otpId: otp.id, recipientType: otp.recipient.type })
     await prisma.otpToken.create({
       data: {
         id: otp.id,
@@ -22,6 +27,7 @@ export class PrismaOTPRepository implements OTPRepository {
   }
 
   async findValidByRecipient(recipient: Recipient): Promise<OTPToken | null> {
+    this.logger.debug('fetching valid OTP token from database', { recipientType: recipient.type })
     const otpRecord = await prisma.otpToken.findFirst({
       where: {
         recipientType: recipient.type,
@@ -34,9 +40,11 @@ export class PrismaOTPRepository implements OTPRepository {
     })
 
     if (!otpRecord) {
+      this.logger.debug('no valid OTP token found for recipient', { recipientType: recipient.type })
       return null
     }
 
+    this.logger.debug('valid OTP found for recipient', { recipientType: recipient.type })
     return OTPToken.create(
       {
         recipient: Recipient.create({
@@ -53,6 +61,7 @@ export class PrismaOTPRepository implements OTPRepository {
   }
 
   async invalidate(otp: OTPToken): Promise<void> {
+    this.logger.debug('invalidating OTP token in database', { otpId: otp.id })
     await prisma.otpToken.update({
       where: {
         id: otp.id,
@@ -61,5 +70,6 @@ export class PrismaOTPRepository implements OTPRepository {
         isValid: false,
       },
     })
+    this.logger.debug('OTP token invalidated', { otpId: otp.id })
   }
 }

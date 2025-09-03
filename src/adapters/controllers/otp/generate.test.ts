@@ -5,6 +5,8 @@ import { GenerateOTPUseCase } from '~/domain/otp-management/application/use-case
 import { errorHandler } from '~/adapters/controllers/interfaces/error-handler'
 import { SchemaValidator } from '~/adapters/controllers/interfaces/schema-validator'
 
+import { Logger } from '~/infra/logger'
+
 import { GenerateOTPController, Body } from './generate'
 
 jest.mock('~/adapters/controllers/interfaces/error-handler', () => ({
@@ -14,7 +16,8 @@ jest.mock('~/adapters/controllers/interfaces/error-handler', () => ({
 describe('[controller] generate otp', () => {
   const generateOTPUseCase = mock<GenerateOTPUseCase>()
   const schemaValidator = mock<SchemaValidator<Body>>()
-  const controller = new GenerateOTPController(generateOTPUseCase, schemaValidator)
+  const logger = mock<Logger>()
+  const controller = new GenerateOTPController(generateOTPUseCase, schemaValidator, logger)
 
   beforeEach(() => {
     jest.clearAllMocks()

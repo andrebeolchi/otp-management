@@ -6,15 +6,19 @@ import { OTPToken } from '~/domain/otp-management/entities/otp-token'
 
 import { OTPRepository } from '~/domain/otp-management/application/repositories/otp-repository'
 
+import { Logger } from '~/infra/logger'
+
 import { ValidateOTPUseCase } from './validate-otp-use-case'
 
 describe('[use-cases] validate otp', () => {
   let otpRepository: MockProxy<OTPRepository>
   let validateOTPUseCase: ValidateOTPUseCase
+  let logger: MockProxy<Logger>
 
   beforeEach(() => {
     otpRepository = mock<OTPRepository>()
-    validateOTPUseCase = new ValidateOTPUseCase(otpRepository)
+    logger = mock<Logger>()
+    validateOTPUseCase = new ValidateOTPUseCase(otpRepository, logger)
   })
 
   it('should return false if no valid OTP exists for the recipient', async () => {

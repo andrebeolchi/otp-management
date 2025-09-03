@@ -9,6 +9,8 @@ import { NotificationProvider } from '~/domain/otp-management/application/reposi
 import { OTPProvider } from '~/domain/otp-management/application/repositories/otp-provider'
 import { OTPRepository } from '~/domain/otp-management/application/repositories/otp-repository'
 
+import { Logger } from '~/infra/logger'
+
 import { GenerateOTPRequest, GenerateOTPUseCase } from './generate-otp-use-case'
 
 describe('[use-cases] generate otp', () => {
@@ -19,18 +21,21 @@ describe('[use-cases] generate otp', () => {
   let otpProvider: MockProxy<OTPProvider>
   let generateOTPUseCase: GenerateOTPUseCase
   let notificationProvider: MockProxy<NotificationProvider>
+  let logger: MockProxy<Logger>
 
   beforeAll(() => {
     otpRepository = mock<OTPRepository>()
     otpProvider = mock<OTPProvider>()
     notificationProvider = mock<NotificationProvider>()
+    logger = mock<Logger>()
 
     generateOTPUseCase = new GenerateOTPUseCase(
       otpRepository,
       otpProvider,
       OTP_LENGTH,
       OTP_EXPIRATION_IN_MS,
-      notificationProvider
+      notificationProvider,
+      logger
     )
   })
 

@@ -6,6 +6,8 @@ import { NotificationProvider } from '~/domain/otp-management/application/reposi
 import { OTPProvider } from '~/domain/otp-management/application/repositories/otp-provider'
 import { OTPRepository } from '~/domain/otp-management/application/repositories/otp-repository'
 
+import { Logger } from '~/infra/logger'
+
 export interface GenerateOTPRequest {
   recipientType: 'email' | 'sms'
   recipientValue: string
@@ -17,7 +19,8 @@ export class GenerateOTPUseCase {
     private otpProvider: OTPProvider,
     private otpLength: number,
     private otpExpirationInMs: number,
-    private notificationProvider: NotificationProvider
+    private notificationProvider: NotificationProvider,
+    private logger: Logger
   ) {}
 
   async execute(request: GenerateOTPRequest) {
@@ -26,9 +29,12 @@ export class GenerateOTPUseCase {
       value: request.recipientValue,
     })
 
+    this.logger.debug('starting OTP generation', { recipientType: recipient.type, recipientValue: recipient.value })
+
     const existingOTP = await this.otpRepository.findValidByRecipient(recipient)
 
     if (existingOTP) {
+      this.logger.info('existing OTP found, invalidating', { recipientType: recipient.type })
       await this.otpRepository.invalidate(existingOTP)
     }
 

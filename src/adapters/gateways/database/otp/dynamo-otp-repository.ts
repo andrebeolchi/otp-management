@@ -8,12 +8,15 @@ import { OTPRepository } from '~/domain/otp-management/application/repositories/
 
 import { dynamodb } from '~/infra/database/dynamodb'
 
+import { Logger } from '~/infra/logger'
+
 export class DynamoOTPRepository implements OTPRepository {
   private tableName = process.env.DYNAMODB_TABLE || 'otp-table'
 
-  constructor() {}
+  constructor(private logger: Logger) {}
 
   async save(otp: OTPToken): Promise<void> {
+    this.logger.debug('saving OTP token', { otpId: otp.id, recipientType: otp.recipient.type })
     await dynamodb.send(
       new PutCommand({
         TableName: this.tableName,
@@ -28,9 +31,11 @@ export class DynamoOTPRepository implements OTPRepository {
         },
       })
     )
+    this.logger.debug('OTP token saved', { otpId: otp.id })
   }
 
   async findValidByRecipient(recipient: Recipient): Promise<OTPToken | null> {
+    this.logger.debug('querying valid OTP by recipient', { recipientType: recipient.type })
     const params = {
       TableName: this.tableName,
       IndexName: 'idx_recipient_type_value',
@@ -47,10 +52,12 @@ export class DynamoOTPRepository implements OTPRepository {
     const result = await dynamodb.send(new QueryCommand(params))
 
     if (!result.Items || result.Items.length === 0) {
+      this.logger.info('no valid OTP token found', { recipientType: recipient.type })
       return null
     }
 
     const otpRecord = result.Items[0]
+    this.logger.info('valid OTP token found', { otpId: otpRecord.id })
 
     return OTPToken.create(
       {
@@ -68,6 +75,7 @@ export class DynamoOTPRepository implements OTPRepository {
   }
 
   async invalidate(otp: OTPToken): Promise<void> {
+    this.logger.debug('invalidating OTP token', { otpId: otp.id })
     const params = {
       TableName: this.tableName,
       Key: {
@@ -81,5 +89,6 @@ export class DynamoOTPRepository implements OTPRepository {
     }
 
     await dynamodb.send(new UpdateCommand(params))
+    this.logger.info('OTP token invalidated', { otpId: otp.id })
   }
 }

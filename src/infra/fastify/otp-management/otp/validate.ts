@@ -7,16 +7,19 @@ import { ValidateOTPController } from '~/adapters/controllers/otp/validate'
 
 import { PrismaOTPRepository } from '~/adapters/gateways/database/otp/prisma-otp-repository'
 
+import { PinoLogger } from '~/infra/logger/pino'
 import { ZodSchemaValidator } from '~/infra/validation/zod/schema-validator'
 import { validateOTPSchema } from '~/infra/validation/zod/schemas/validate-otp-schema'
 
-const otpRepositoryGateway = new PrismaOTPRepository()
+const logger = new PinoLogger()
 
-const validateOTPUseCase = new ValidateOTPUseCase(otpRepositoryGateway)
+const otpRepositoryGateway = new PrismaOTPRepository(logger)
+
+const validateOTPUseCase = new ValidateOTPUseCase(otpRepositoryGateway, logger)
 
 const schemaValidator = new ZodSchemaValidator<z.infer<typeof validateOTPSchema.body>>(validateOTPSchema.body)
 
-const validateOTPController = new ValidateOTPController(validateOTPUseCase, schemaValidator)
+const validateOTPController = new ValidateOTPController(validateOTPUseCase, schemaValidator, logger)
 
 export async function validateOTP(req: FastifyRequest, reply: FastifyReply) {
   const { body, status } = await validateOTPController.execute({
