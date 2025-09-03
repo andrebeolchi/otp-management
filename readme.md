@@ -1,5 +1,9 @@
 # OTP Management System
 
+![GitHub Actions Test Status](https://img.shields.io/github/actions/workflow/status/andrebeolchi/otp-management/test.yml?label=tests) ![GitHub package.json version](https://img.shields.io/github/package-json/v/andrebeolchi/otp-management)
+
+---
+
 Sistema para geração e validação de OTPs (One-Time Password), implementado com **Clean Architecture** para garantir modularidade, escalabilidade e facilidade de manutenção.
 
 ---
