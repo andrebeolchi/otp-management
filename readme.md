@@ -1,6 +1,8 @@
 # OTP Management System
 
-![GitHub Actions Test Status](https://img.shields.io/github/actions/workflow/status/andrebeolchi/otp-management/test.yml?label=tests) ![GitHub package.json version](https://img.shields.io/github/package-json/v/andrebeolchi/otp-management)
+![GitHub Actions Test Status](https://img.shields.io/github/actions/workflow/status/andrebeolchi/otp-management/test.yml?label=tests) 
+![GitHub Actions Deploy Status Status](https://img.shields.io/github/actions/workflow/status/andrebeolchi/otp-management/deploy-lambda.yml?label=lambda%20deploy)
+![GitHub package.json version](https://img.shields.io/github/package-json/v/andrebeolchi/otp-management)
 
 ---
 
