@@ -1,4 +1,4 @@
-import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
+import type { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda'
 import z from 'zod'
 
 import { GenerateOTPUseCase } from '~/domain/otp-management/application/use-cases/generate-otp-use-case'
@@ -13,11 +13,11 @@ import { TwilioSMSProvider } from '~/infra/external/notification/sms/twilio-sms-
 import { LocalOTPProvider } from '~/infra/external/otp/local-otp-provider'
 
 import { config } from '~/infra/config'
-import { PinoLogger } from '~/infra/logger/pino'
+import { PinoLambdaLogger, withRequest } from '~/infra/logger/pino/lambda'
 import { ZodSchemaValidator } from '~/infra/validation/zod/schema-validator'
 import { generateOTPSchema } from '~/infra/validation/zod/schemas/generate-otp-schema'
 
-const logger = new PinoLogger()
+const logger = new PinoLambdaLogger()
 
 const otpRepositoryGateway = new DynamoOTPRepository(logger)
 const otpProvider = new LocalOTPProvider()
@@ -39,7 +39,9 @@ const schemaValidator = new ZodSchemaValidator<z.infer<typeof generateOTPSchema.
 
 const generateOTPController = new GenerateOTPController(generateOTPUseCase, schemaValidator, logger)
 
-export const generate = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+export const generate = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
+  withRequest(event, context)
+
   const body = event.body ? JSON.parse(event.body) : {}
 
   const { body: responseBody, status } = await generateOTPController.execute({

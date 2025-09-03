@@ -7242,6 +7242,11 @@ pino-abstract-transport@^2.0.0:
   dependencies:
     split2 "^4.0.0"
 
+pino-lambda@^4.4.1:
+  version "4.4.1"
+  resolved "https://registry.yarnpkg.com/pino-lambda/-/pino-lambda-4.4.1.tgz#1ee8f50eca52227a9e48be6a3c726eae3abd4b1e"
+  integrity sha512-j3UrwtabKre/RmKH9X5nW5Eu1DsBXm3pmwzsC6iOLnhN9Ewe1pL8H8xikXqWOBXL+mImwSC/kADKyF66MsTHXg==
+
 pino-std-serializers@^7.0.0:
   version "7.0.0"
   resolved "https://registry.npmjs.org/pino-std-serializers/-/pino-std-serializers-7.0.0.tgz"
