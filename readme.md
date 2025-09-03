@@ -1,12 +1,31 @@
 # OTP Management System
 
-Este projeto é um sistema de gerenciamento de OTP (One-Time Password), implementado com **Clean Architecture** para garantir modularidade, escalabilidade e facilidade de manutenção. 
+Sistema para geração e validação de OTPs (One-Time Password), implementado com **Clean Architecture** para garantir modularidade, escalabilidade e facilidade de manutenção.
+
+---
+
+## Índice
+
+- [OTP Management System](#otp-management-system)
+  - [Índice](#índice)
+  - [O que é OTP?](#o-que-é-otp)
+  - [Como Executar o Projeto?](#como-executar-o-projeto)
+    - [Pré-requisitos](#pré-requisitos)
+    - [Passos para Configuração](#passos-para-configuração)
+  - [Modos de Execução](#modos-de-execução)
+    - [Modo Servidor (Docker + PostgreSQL)](#modo-servidor-docker--postgresql)
+    - [Modo Serverless (AWS Lambda + DynamoDB)](#modo-serverless-aws-lambda--dynamodb)
+  - [Estrutura do Projeto](#estrutura-do-projeto)
+  - [Documentação da API](#documentação-da-api)
+  - [Como Rodar os Testes](#como-rodar-os-testes)
+  - [Tecnologias Utilizadas](#tecnologias-utilizadas)
 
 ---
 
 ## O que é OTP?
 
 **OTP (One-Time Password)** é uma senha de uso único, gerada para autenticação de usuários em sistemas. Ela é amplamente utilizada para:
+
 - Verificação de identidade (2FA - autenticação de dois fatores).
 - Confirmação de transações financeiras.
 - Registro e login em sistemas seguros.
@@ -30,20 +49,21 @@ O OTP é enviado ao usuário por meio de canais como **e-mail** ou **SMS**, e po
 1. **Clone o repositório**:
 
 ```bash
-   git clone https://github.com/andrebeolchi/otp-management.git
-   cd otp-management
+git clone https://github.com/andrebeolchi/otp-management.git
+cd otp-management
 ```
 
 2. **Instale as dependências**:
 
 ```bash
-   npm install
-   # ou
-   yarn install
+npm install
+# ou
+yarn install
 ```
 
 3. **Configure as variáveis de ambiente**
-<br>  Crie um arquivo `.env` a partir do `.env.example` na raiz do projeto
+
+Crie um arquivo `.env` a partir do `.env.example` na raiz do projeto.
 
 ---
 
@@ -51,110 +71,126 @@ O OTP é enviado ao usuário por meio de canais como **e-mail** ou **SMS**, e po
 
 ### Modo Servidor (Docker + PostgreSQL)
 
+Este modo é indicado para desenvolvimento local rápido, utilizando um banco PostgreSQL via Docker.
+
 1. **Suba o container (banco de dados)**
-<br>  Execute o comando abaixo para subir o container do Prisma utilizando o Docker:
 
 ```bash
-   docker-compose up -d
+docker-compose up -d
 ```
 
 2. **Execute as migrations**
 
 ```bash
-   yarn prisma migrate dev
+yarn prisma migrate dev
 ```
 
 3. **Inicie o servidor**
 
 ```bash
-   npm run dev:fastify
-   # ou
-   yarn dev:fastify
+npm run dev:fastify
+# ou
+yarn dev:fastify
 ```
 
 O servidor estará rodando em `http://localhost:3000`.
 
+---
+
 ### Modo Serverless (AWS Lambda + DynamoDB)
 
-Vou considerar que você já tenha o AWS CLI configurado com suas credenciais.
+Modo para deploy em nuvem AWS usando Lambda e DynamoDB, ideal para produção e escalabilidade.
 
-1. Instale o Serverless Framework globalmente, se ainda não tiver:
+> [!IMPORTANT]
+> **Pré-requisito:** Certifique-se de estar logado no AWS CLI (`aws configure`) e que o Serverless Framework (`serverless login`) está instalado e configurado corretamente.  
 
-```bash
-   npm install -g serverless
-   # ou
-   yarn global add serverless
-```
 
-2. Execute o comando abaixo para implantar a aplicação na AWS:
+1. Execute o deploy do Lambda:
 
 ```bash
-   npm run dev:lambda
-   # ou
-   yarn dev:lambda
+npm run dev:lambda
+# ou
+yarn dev:lambda
 ```
 
-Os endpoints estarão disponíveis e listados no terminal após a implantação.
+Os endpoints disponíveis serão listados no terminal após a implantação.
 
 ---
 
 ## Estrutura do Projeto
 
-```
-src/
-├── adapters/
-│   ├── controllers/             # Controladores para lidar com requisições HTTP
-│   └── gateways/                # Implementações dos repositories (banco de dados, serviços externos)
-│
-├── domain/
-│   ├── commons/                 # Interfaces e erros comuns
-│   └── otp-management/          # Entidades, casos de uso e interfaces específicas do OTP
-│       ├── application/         # Lógica de aplicação
-│       │   ├── repositories/    # Interfaces dos repositórios
-│       │   └── use-cases/       # Casos de uso (lógica de negócio)
-│       └── entities/            # Entidades do domínio
-│           └── value-objects/   # Objetos de valor
-├── infra/
-│   ├── database/                # Configuração do banco de dados (Prisma, DynamoDB)
-│   ├── external/                # Serviços externos (envio de e-mail, SMS) ou que poderiam ser externos (geração de OTP)
-│   ├── fastify/                 # Configuração do servidor Fastify e rotas
-│   ├── lambda/                  # Configuração do AWS Lambda
-│   ├── logger/                  # Configuração do logger (Pino)
-│   └── validation/              # Validações de dados (Zod, Joi)
-└── config.ts                    # Configurações gerais do projeto (variáveis de ambiente)
-```
+- `src/adapters/controllers` — Controladores para lidar com requisições HTTP
+- `src/adapters/gateways` — Implementações dos repositórios (banco de dados, serviços externos)
+- `src/domain/commons` — Interfaces e erros comuns
+- `src/domain/[DOMAIN]/application/repositories` — Interfaces dos repositórios
+- `src/domain/[DOMAIN]/application/use-cases` — Casos de uso (lógica de negócio)
+- `src/domain/[DOMAIN]/entities` — Entidades do domínio e value objects
+- `src/infra/database` — Configuração do banco de dados (Prisma, DynamoDB)
+- `src/infra/external` — Serviços externos (envio de e-mail, SMS) ou geração de OTP
+- `src/infra/fastify` — Configuração do servidor Fastify e rotas
+- `src/infra/lambda` — Configuração do AWS Lambda
+- `src/infra/logger` — Configuração do logger (Pino)
+- `src/infra/validation` — Validações de dados (Zod, Joi)
+- `config.ts` — Configurações gerais do projeto (variáveis de ambiente)
+
+> [!TIP]
+> `[DOMAIN]` representa o nome do módulo/domínio, como por exemplo `otp-management`.
 
 ---
 
 ## Documentação da API
 
-A documentação da API está disponível via Swagger. Após iniciar o servidor, acesse:
+A documentação da API está disponível via Swagger.
 
-```
-http://localhost:3000/
+- Existem dois arquivos Swagger separados: um para o uso com [Fastify](./docs/fastify-api-spec.yml) e outro para [Lambda](./docs/lambda-api-spec.yml).
+
+Em desenvolvimento local (Fastify), acesse:
+
+[http://localhost:3000/](http://localhost:3000/)
+
+---
+
+## Como Rodar os Testes
+
+Utilizamos o **Jest** como framework de testes. Para rodar a suíte de testes:
+
+```bash
+yarn test
 ```
 
 ---
 
 ## Tecnologias Utilizadas
-- **Node.js**
-- **TypeScript**
-- **Fastify**
-- **AWS Lambda**
-- **Prisma**
-- **DynamoDB**
-- **PostgreSQL**
-- **Zod**
-- **Jest**
-- **Docker**
-- **Serverless Framework**
-- **Nodemailer**
-- **Twilio**
-- **ESLint**
-- **Prettier**
-- **Husky**
-- **Lint-staged**
-- **Commitlint**
-- **Conventional Commits**
-- **GitHub Actions**
-- **Swagger**
+
+- **Linguagem e Runtime**
+  - Node.js
+  - TypeScript
+- **Frameworks e APIs**
+  - Fastify
+  - AWS Lambda
+  - Serverless Framework
+- **Banco de Dados e ORM**
+  - PostgreSQL
+  - DynamoDB
+  - Prisma
+- **Validação e Segurança**
+  - Zod
+- **Serviços de Comunicação**
+  - Nodemailer
+  - Twilio
+- **Testes**
+  - Jest
+- **Infraestrutura e DevOps**
+  - Docker
+  - GitHub Actions
+- **Qualidade de Código**
+  - ESLint
+  - Prettier
+  - Husky
+  - Lint-staged
+  - Commitlint
+  - Conventional Commits
+- **Documentação**
+  - Swagger
+
+---

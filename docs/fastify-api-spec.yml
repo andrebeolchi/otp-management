@@ -1,0 +1,188 @@
+---
+swagger: "2.0"
+info:
+  title: otp-management
+  description:
+    A clean architecture implementation of an OTP (One-Time Password) management
+    system using Fastify and TypeScript.
+  version: 1.0.0
+
+definitions: {}
+
+paths:
+  "/health":
+    get:
+      description: Health check endpoint
+      tags:
+        - health-check
+      responses:
+        "200":
+          description: Default Response
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                enum:
+                  - ok
+            required:
+              - status
+            additionalProperties: false
+  "/otp":
+    post:
+      summary: Generate OTP
+      description:
+        Generate a One-Time Password (OTP) for a given recipient (email
+        or SMS).
+      tags:
+        - OTP Management
+      parameters:
+        - name: body
+          in: body
+          schema:
+            type: object
+            properties:
+              recipientType:
+                type: string
+                enum:
+                  - email
+                  - sms
+              recipientValue:
+                type: string
+                minLength: 1
+            required:
+              - recipientType
+              - recipientValue
+            additionalProperties: false
+      responses:
+        "201":
+          description: Default Response
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                enum:
+                  - OTP generated successfully
+            required:
+              - message
+            additionalProperties: false
+        "400":
+          description: Default Response
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                message:
+                  type: string
+              required:
+                - message
+              additionalProperties: false
+        "500":
+          description: Default Response
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                message:
+                  type: string
+              required:
+                - message
+              additionalProperties: false
+  "/otp/validate":
+    post:
+      summary: Validate OTP
+      description:
+        Validate a One-Time Password (OTP) for a given recipient (email
+        or SMS).
+      tags:
+        - OTP Management
+      parameters:
+        - name: body
+          in: body
+          schema:
+            type: object
+            properties:
+              recipientType:
+                type: string
+                enum:
+                  - email
+                  - sms
+              recipientValue:
+                type: string
+                minLength: 1
+              otp:
+                type: string
+                minLength: 1
+            required:
+              - recipientType
+              - recipientValue
+              - otp
+            additionalProperties: false
+      responses:
+        "200":
+          description: Default Response
+          schema:
+            type: object
+            properties:
+              isValid:
+                type: boolean
+                enum:
+                  - true
+            required:
+              - isValid
+            additionalProperties: false
+        "400":
+          description: Default Response
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                enum:
+                  - Invalid OTP
+              isValid:
+                type: boolean
+                enum:
+                  - false
+            required:
+              - message
+              - isValid
+            additionalProperties: false
+        "410":
+          description: Default Response
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                enum:
+                  - OTP has expired
+              isValid:
+                type: boolean
+                enum:
+                  - false
+            required:
+              - message
+              - isValid
+            additionalProperties: false
+        "500":
+          description: Default Response
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                message:
+                  type: string
+              required:
+                - message
+              additionalProperties: false
+
+consumes:
+  - application/json
+
+produces:
+  - application/json
