@@ -15,6 +15,9 @@ Sistema para geração e validação de OTPs (One-Time Password), implementado c
 - [OTP Management System](#otp-management-system)
   - [Índice](#índice)
   - [O que é OTP?](#o-que-é-otp)
+  - [Como Testar o Projeto?](#como-testar-o-projeto)
+    - [Enviar OTP](#enviar-otp)
+    - [Validar OTP](#validar-otp)
   - [Como Executar o Projeto?](#como-executar-o-projeto)
     - [Pré-requisitos](#pré-requisitos)
     - [Passos para Configuração](#passos-para-configuração)
@@ -39,6 +42,37 @@ Sistema para geração e validação de OTPs (One-Time Password), implementado c
 O OTP é enviado ao usuário por meio de canais como **e-mail** ou **SMS**, e possui um tempo de expiração para garantir segurança.
 
 ---
+
+## Como Testar o Projeto?
+
+Para testar a API, você pode usar ferramentas como **Postman**, **Insomnia** ou simplesmente o **cURL** no terminal.
+
+### Enviar OTP
+
+```bash
+curl -X POST https://4si10shrn3.execute-api.us-east-1.amazonaws.com/otp \
+  -H "Content-Type: application/json" \
+  -d '{
+    "recipientType": "email",
+    "recipientValue": "seu-email@exemplo.com"
+  }'
+```
+
+> [!NOTE]
+>
+> O envio via **SMS** está restrito no *free trial* da Twilio, então apenas email funcionará por padrão.
+
+### Validar OTP
+
+```bash
+curl -X POST https://4si10shrn3.execute-api.us-east-1.amazonaws.com/otp/validate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "recipientType": "sms",
+    "recipientValue": "+5511999999999",
+    "otp": "123456"
+  }'
+```
 
 ## Como Executar o Projeto?
 
@@ -158,8 +192,6 @@ Em desenvolvimento local (Fastify), acesse:
 
 ## Como Rodar os Testes
 
-Utilizamos o **Jest** como framework de testes. Para rodar a suíte de testes:
-
 ```bash
 yarn test
 ```
@@ -189,6 +221,8 @@ yarn test
 - **Infraestrutura e DevOps**
   - Docker
   - GitHub Actions
+- **Logging e Observabilidade**
+  - Pino
 - **Qualidade de Código**
   - ESLint
   - Prettier
