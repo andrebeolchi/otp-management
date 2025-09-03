@@ -32,7 +32,7 @@ provider:
 
 functions:
   generate:
-    handler: dist/lambda/generate.generate
+    handler: src/infra/lambda/otp/generate.generate
     events:
       - httpApi:
           path: /otp
@@ -49,7 +49,7 @@ functions:
       GOOGLE_PASSWORD: ${env:GOOGLE_PASSWORD, 'fakevalue'}
 
   validate:
-    handler: dist/lambda/validate.validate
+    handler: src/infra/lambda/otp/validate.validate
     events:
       - httpApi:
           path: /otp/validate
@@ -89,4 +89,3 @@ resources:
 
 build:
   esbuild: false
-  outputBuildFolder: dist/lambda
