@@ -21,7 +21,7 @@ export class GenerateOTPController {
 
   async execute({ body }: Request<Body>): Promise<Response<{ message: string }>> {
     try {
-      this.logger.debug('validating generate OTP request for ', { type: body.recipientType })
+      this.logger.debug('validating generate OTP request', { type: body.recipientType })
       const { data, errors } = this.schemaValidator.execute(body)
 
       if (errors?.length) {
@@ -37,13 +37,13 @@ export class GenerateOTPController {
         recipientValue: data.recipientValue,
       })
 
-      this.logger.info('OTP generated successfully for ', { type: data.recipientType })
+      this.logger.info('OTP generated successfully', { type: data.recipientType })
       return {
         status: 201,
         body: { message: 'OTP generated successfully' },
       }
     } catch (error) {
-      this.logger.error('error generating OTP', { error })
+      this.logger.error('unexpected error during OTP generation', { error })
       return errorHandler(error)
     }
   }

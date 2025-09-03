@@ -24,22 +24,23 @@ export class GenerateOTPUseCase {
   ) {}
 
   async execute(request: GenerateOTPRequest) {
+    this.logger.debug('starting OTP generation', { recipientType: request.recipientType })
+
     const recipient = Recipient.create({
       type: request.recipientType,
       value: request.recipientValue,
     })
 
-    this.logger.debug('starting OTP generation', { recipientType: recipient.type, recipientValue: recipient.value })
-
     const existingOTP = await this.otpRepository.findValidByRecipient(recipient)
 
     if (existingOTP) {
-      this.logger.info('existing OTP found, invalidating', { recipientType: recipient.type })
+      this.logger.info('invalidating existing OTP for recipient', { recipientType: recipient.type })
       await this.otpRepository.invalidate(existingOTP)
     }
 
     const otpCode = await this.otpProvider.generate({ length: this.otpLength })
 
+    this.logger.debug('OTP code generated, creating OTP token entity', { recipientType: recipient.type, otp: otpCode })
     const otpToken = OTPToken.create({
       token: otpCode,
       recipient,
@@ -48,6 +49,10 @@ export class GenerateOTPUseCase {
     })
 
     await this.otpRepository.save(otpToken)
+    this.logger.debug('otp saved successfully, preparing to send notification', {
+      recipientType: recipient.type,
+      otp: otpCode,
+    })
 
     await this.notificationProvider.send(recipient, {
       subject: 'Your OTP Code',

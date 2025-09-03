@@ -66,7 +66,7 @@ export class ValidateOTPController {
         body: { isValid: true },
       }
     } catch (error) {
-      this.logger.error('Unexpected error during OTP validation', { error })
+      this.logger.error('unexpected error during OTP validation', { error })
       return errorHandler(error)
     }
   }
