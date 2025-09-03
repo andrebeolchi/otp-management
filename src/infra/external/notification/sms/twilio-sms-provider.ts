@@ -14,6 +14,7 @@ export class TwilioSMSProvider implements NotificationProvider {
 
   async send(recipient: Recipient, content: Content): Promise<void> {
     try {
+      this.logger.info('sending email via Nodemailer')
       const response = await twilioClient.messages.create({
         body: `${content.subject}: ${content.body}`,
         from: config.twilio.phoneNumber,
@@ -24,6 +25,8 @@ export class TwilioSMSProvider implements NotificationProvider {
         this.logger.error('Twilio SMS sending failed', { error: response.errorMessage, code: response.errorCode })
         throw new ExternalServiceError(`Failed to send SMS via Twilio: ${response.errorMessage}`)
       }
+
+      this.logger.info('Twilio SMS sent successfully', { sid: response.sid })
     } catch (error) {
       this.logger.error('Twilio SMS sending failed due to an exception', { error })
       throw new ExternalServiceError('Failed to send SMS via Twilio')

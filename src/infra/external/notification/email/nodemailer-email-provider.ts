@@ -12,14 +12,20 @@ export class NodemailerEmailProvider implements NotificationProvider {
   constructor(private logger: Logger) {}
 
   async send(recipient: Recipient, content: Content): Promise<void> {
-    this.logger.debug('sending email via Nodemailer')
     try {
-      await nodemailerClient.sendMail({
+      this.logger.info('sending email via Nodemailer')
+      const result = await nodemailerClient.sendMail({
         to: recipient.value,
         subject: content.subject,
         text: content.body,
       })
-      this.logger.info('Nodemailer email sent successfully')
+
+      if (result.rejected.length > 0) {
+        this.logger.error('Nodemailer email sending failed', { rejected: result.rejected })
+        throw new ExternalServiceError(`Failed to send email via Nodemailer to: ${result.rejected.join(', ')}`)
+      }
+
+      this.logger.info('Nodemailer email sent successfully', { messageId: result.messageId })
     } catch (error) {
       this.logger.error('Nodemailer email sending failed due to an exception', { error })
       throw new ExternalServiceError('Failed to send email via Nodemailer')
